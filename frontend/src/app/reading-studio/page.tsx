@@ -330,12 +330,9 @@ export default function ReadingStudioPage() {
       localStorage.setItem('ecr_duration', (recordingDuration || 35).toString());
     }
 
-    setTimeout(() => {
-      setEvaluating(false);
-      router.push(
-        `/assessment-result?passageId=${activePassage.id}&duration=${recordingDuration || 35}`
-      );
-    }, 900);
+    router.push(
+      `/assessment-result?passageId=${activePassage.id}&duration=${recordingDuration || 35}`
+    );
   };
 
   return (

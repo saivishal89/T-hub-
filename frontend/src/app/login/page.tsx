@@ -84,6 +84,16 @@ export default function LoginPage() {
       descriptionEn: 'Statewide FLN telemetry, school and teacher management, AI calibration, and compliance.',
     },
     {
+      key: 'district_officer',
+      labelTe: 'DEO పోర్టల్',
+      labelEn: 'DEO Portal',
+      icon: School,
+      color: 'from-cyan-800 to-sky-950',
+      placeholderEmail: 'deo.district@telangana.gov.in',
+      descriptionTe: 'జిల్లా స్థాయి పాఠశాలల పర్యవేక్షణ, మండలాల పోలిక, ఉపాధ్యాయుల పరిశీలన మరియు FLN నివేదికలు.',
+      descriptionEn: 'Assigned district analytics, mandal comparisons, school inspection reports, and FLN benchmarks.',
+    },
+    {
       key: 'parent',
       labelTe: 'తల్లిదండ్రుల పోర్టల్',
       labelEn: 'Parent Portal',
@@ -187,7 +197,7 @@ export default function LoginPage() {
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               {t('లాగిన్ పోర్టల్ ఎంచుకోండి (Select Login Portal)', 'Select Login Portal')}
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
               {portals.map((p) => {
                 const isSelected = activePortal === p.key;
                 const Icon = p.icon;
@@ -253,6 +263,37 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {/* Quick Student Account Selectors across Grades 1 to 5 */}
+            {activePortal === 'student' && (
+              <div className="p-3 bg-blue-50/70 rounded-xl border border-blue-200/60 space-y-2 animate-in fade-in">
+                <div className="flex items-center justify-between text-[11px] font-bold text-blue-900 font-telugu">
+                  <span>{t('నమోదైన విద్యార్థి ఖాతాలు (త్వరిత ఎంపిక):', 'Available Student Accounts (Click to select):')}</span>
+                  <span className="text-[10px] text-blue-600 font-mono">Pass: Student@1234</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { email: 'ananya.student@school.gov.in', label: '1వ తరగతి: అనన్య (Class 1)' },
+                    { email: 'sneha.student@school.gov.in', label: '2వ తరగతి: స్నేహ (Class 2)' },
+                    { email: 'ramu.student@school.gov.in', label: '3వ తరగతి: రాము (Class 3)' },
+                    { email: 'divya.student@school.gov.in', label: '4వ తరగతి: దివ్య (Class 4)' },
+                    { email: 'pranathi.student@school.gov.in', label: '5వ తరగతి: ప్రణతి (Class 5)' },
+                  ].map((stu) => (
+                    <button
+                      key={stu.email}
+                      type="button"
+                      onClick={() => {
+                        setEmail(stu.email);
+                        setPassword('Student@1234');
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-blue-200 text-blue-800 rounded-lg hover:bg-blue-600 hover:text-white transition shadow-2xs font-telugu cursor-pointer"
+                    >
+                      {stu.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Password Field with Show/Hide Option */}
             <div>

@@ -28,14 +28,56 @@ import {
 } from 'lucide-react';
 
 export default function TeacherDashboardPage() {
-  const { currentUser, t, language } = useApp();
+  const { currentUser, t, language, token } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [selectedPassageId, setSelectedPassageId] = useState('PSG-001');
   const [assignSuccessMessage, setAssignSuccessMessage] = useState<string | null>(null);
+  const [students, setStudents] = useState<StudentProgress[]>(MOCK_STUDENTS_CLASS3A);
+  const [isDbLoaded, setIsDbLoaded] = useState<boolean>(false);
 
-  const students = MOCK_STUDENTS_CLASS3A;
+  // Fetch real classroom roster from backend database scoped to this teacher
+  React.useEffect(() => {
+    async function loadClassroomStudents() {
+      try {
+        const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('ecr_auth_token') : '') || '';
+        const res = await fetch('http://localhost:8000/api/students', {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.students) && data.students.length > 0) {
+            const mapped: StudentProgress[] = data.students.map((s: any) => ({
+              id: s.id,
+              name: s.name,
+              nameTelugu: s.name_telugu,
+              grade: `తరగతి ${s.grade}-${s.section}`,
+              rollNumber: s.roll_number,
+              readingLevel: s.reading_level,
+              currentWCPM: s.current_wcpm,
+              targetWCPM: s.target_wcpm,
+              accuracyTrend: typeof s.accuracy_trend === 'string' ? JSON.parse(s.accuracy_trend) : (s.accuracy_trend || [78, 82, 85]),
+              lastAssessmentDate: s.last_assessment_date,
+              stars: s.stars || 15,
+              streakDays: s.streak_days || 3,
+              weakAksharas: typeof s.weak_aksharas === 'string' ? JSON.parse(s.weak_aksharas) : (s.weak_aksharas || ['ట్ల', 'వు']),
+              parentContact: s.parent_contact || '9876543210',
+              notes: s.notes || '',
+            }));
+            setStudents(mapped);
+            setIsDbLoaded(true);
+          }
+        }
+      } catch (e) {
+        console.warn('Backend student roster fetch error, using local fallback:', e);
+      }
+    }
+    loadClassroomStudents();
+  }, [token]);
 
   // Exact metrics dynamically derived from actual student data
   const totalEnrolled = students.length;

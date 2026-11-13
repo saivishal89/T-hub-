@@ -74,6 +74,7 @@ async function fetchGoogleChunkAudio(chunk: string): Promise<Uint8Array | null> 
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         Referer: 'https://translate.google.com/',
       },
+      signal: AbortSignal.timeout(3000),
     });
 
     if (!res.ok) return null;
@@ -85,23 +86,43 @@ async function fetchGoogleChunkAudio(chunk: string): Promise<Uint8Array | null> 
   }
 }
 
+// In-memory LRU-style cache to prevent re-fetching and audio dropouts on repeated clicks
+const ttsCache = new Map<string, { buffer: ArrayBuffer; engine: string }>();
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const text = searchParams.get('text');
   const persona = (searchParams.get('persona') || 'lakshmi').toLowerCase();
   const murfKey = searchParams.get('murfKey') || process.env.MURF_API_KEY || '';
+  const isSlow = searchParams.get('slow') === 'true';
 
   if (!text || !text.trim()) {
     return new NextResponse('Missing text parameter', { status: 400 });
   }
 
   const cleanText = text.trim();
+  const cacheKey = `${persona}_${isSlow ? 'slow_' : ''}${cleanText}`;
+
+  // Return cached audio immediately (0ms latency for repeated words & syllables)
+  if (ttsCache.has(cacheKey)) {
+    const cached = ttsCache.get(cacheKey)!;
+    return new NextResponse(cached.buffer, {
+      headers: {
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': cached.buffer.byteLength.toString(),
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+        'X-Voice-Engine': `${cached.engine}-Cached`,
+      },
+    });
+  }
 
   // 1. If persona is Anisha (Falcon) and Murf API Key is provided, call live Murf Falcon streaming API
   if (persona === 'anisha' && murfKey) {
     const murfAudio = await fetchMurfFalconAudio(cleanText, murfKey);
-    if (murfAudio && murfAudio.byteLength > 1000) {
-      return new Response(murfAudio.buffer as ArrayBuffer, {
+    if (murfAudio && murfAudio.byteLength > 100) {
+      const buffer = murfAudio.buffer as ArrayBuffer;
+      ttsCache.set(cacheKey, { buffer, engine: 'Murf-Falcon-Anisha' });
+      return new Response(buffer, {
         headers: {
           'Content-Type': 'audio/mpeg',
           'Content-Length': murfAudio.byteLength.toString(),
@@ -116,15 +137,18 @@ export async function GET(request: NextRequest) {
   try {
     const backendUrl = `http://localhost:8000/api/tts?text=${encodeURIComponent(
       cleanText
-    )}&persona=${encodeURIComponent(persona)}`;
+    )}&persona=${encodeURIComponent(persona)}${isSlow ? '&slow=true' : ''}`;
 
     const backendRes = await fetch(backendUrl, {
       cache: 'no-store',
+      signal: AbortSignal.timeout(1800),
     });
 
     if (backendRes.ok) {
       const audioBuffer = await backendRes.arrayBuffer();
-      if (audioBuffer && audioBuffer.byteLength > 1000) {
+      // Allow single syllables / short audio (e.g. 150-800 bytes) without discarding!
+      if (audioBuffer && audioBuffer.byteLength > 100) {
+        ttsCache.set(cacheKey, { buffer: audioBuffer, engine: `Edge-Neural-${persona}` });
         return new NextResponse(audioBuffer, {
           headers: {
             'Content-Type': 'audio/mpeg',
@@ -162,7 +186,10 @@ export async function GET(request: NextRequest) {
     offset += buf.length;
   }
 
-  return new Response(concatenated.buffer as ArrayBuffer, {
+  const finalBuffer = concatenated.buffer as ArrayBuffer;
+  ttsCache.set(cacheKey, { buffer: finalBuffer, engine: 'Google-Fallback' });
+
+  return new Response(finalBuffer, {
     headers: {
       'Content-Type': 'audio/mpeg',
       'Content-Length': totalLength.toString(),

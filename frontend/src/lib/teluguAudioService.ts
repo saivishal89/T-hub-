@@ -53,7 +53,7 @@ class TeluguAudioService {
       if (savedClone) {
         try {
           this.clonedProfile = JSON.parse(savedClone);
-        } catch {}
+        } catch { }
       }
     }
   }
@@ -69,7 +69,7 @@ class TeluguAudioService {
       }
     }
     if (this.audioContext && this.audioContext.state === 'suspended') {
-      this.audioContext.resume().catch(() => {});
+      this.audioContext.resume().catch(() => { });
     }
     return this.audioContext;
   }
@@ -121,95 +121,25 @@ class TeluguAudioService {
 
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.05);
-    } catch {}
+    } catch { }
   }
 
   /**
-   * Configures Web Audio API DSP EQ filters and playback rate to match the chosen Voice Persona
+   * Configures audio playback preserving authentic neural speech without artificial distortion.
+   * Dedicated distinct neural voices (te-IN-ShrutiNeural & te-IN-MohanNeural) require zero DSP pitch warping.
    */
   private applyPersonaDSP(audio: HTMLAudioElement, persona: VoicePersona): void {
     try {
-      const ctx = this.getAudioContext();
-      if (!ctx) return;
-
-      if (!this.sourceNode) {
-        this.sourceNode = ctx.createMediaElementSource(audio);
-        this.lowFilter = ctx.createBiquadFilter();
-        this.highFilter = ctx.createBiquadFilter();
-        this.gainNode = ctx.createGain();
-
-        this.lowFilter.type = 'lowshelf';
-        this.highFilter.type = 'highshelf';
-
-        this.sourceNode.connect(this.lowFilter);
-        this.lowFilter.connect(this.highFilter);
-        this.highFilter.connect(this.gainNode);
-        this.gainNode.connect(ctx.destination);
-      }
-
-      if (persona === 'child') {
-        // High, bright, energetic child peer voice
-        audio.playbackRate = 1.12;
-        if (this.lowFilter) {
-          this.lowFilter.frequency.value = 250;
-          this.lowFilter.gain.value = -3;
-        }
-        if (this.highFilter) {
-          this.highFilter.frequency.value = 3200;
-          this.highFilter.gain.value = 4;
-        }
-      } else if (persona === 'srinivas') {
-        // Deep, authoritative, resonant male educator voice
-        audio.playbackRate = 0.90;
-        if (this.lowFilter) {
-          this.lowFilter.frequency.value = 200;
-          this.lowFilter.gain.value = 6;
-        }
-        if (this.highFilter) {
-          this.highFilter.frequency.value = 3000;
-          this.highFilter.gain.value = -2;
-        }
-      } else if (persona === 'anisha') {
-        // Murf Falcon Anisha voice: smooth, crisp modern Indian conversational tone
-        audio.playbackRate = 1.0;
-        if (this.lowFilter) {
-          this.lowFilter.frequency.value = 260;
-          this.lowFilter.gain.value = 1.5;
-        }
-        if (this.highFilter) {
-          this.highFilter.frequency.value = 3500;
-          this.highFilter.gain.value = 3;
-        }
-      } else if (persona === 'cloned') {
-        // Personalized teacher clone acoustic profile
+      if (persona === 'cloned') {
+        // Only apply custom acoustic profile for teacher's cloned voice sample
         const factor = this.clonedProfile.pitchFactor || 1.0;
         audio.playbackRate = Math.max(0.85, Math.min(1.15, factor));
-        if (this.lowFilter) {
-          this.lowFilter.frequency.value = 220;
-          this.lowFilter.gain.value = 3;
-        }
-        if (this.highFilter) {
-          this.highFilter.frequency.value = 3000;
-          this.highFilter.gain.value = 2;
-        }
       } else {
-        // Default Lakshmi Teacher: Warm, patient, soft mid-range
-        audio.playbackRate = 0.96;
-        if (this.lowFilter) {
-          this.lowFilter.frequency.value = 300;
-          this.lowFilter.gain.value = 1.5;
-        }
-        if (this.highFilter) {
-          this.highFilter.frequency.value = 3500;
-          this.highFilter.gain.value = 0.5;
-        }
+        // Natural transparent playback for genuine Microsoft Neural models
+        audio.playbackRate = 1.0;
       }
     } catch {
-      // AudioContext source may fail if already connected; fallback gracefully
-      if (persona === 'child') audio.playbackRate = 1.12;
-      else if (persona === 'srinivas') audio.playbackRate = 0.90;
-      else if (persona === 'cloned') audio.playbackRate = this.clonedProfile.pitchFactor || 1.0;
-      else audio.playbackRate = 0.96;
+      audio.playbackRate = 1.0;
     }
   }
 
@@ -262,6 +192,7 @@ class TeluguAudioService {
       rate?: number;
       pitch?: number;
       persona?: VoicePersona;
+      slow?: boolean;
     } = {}
   ): void {
     if (typeof window === 'undefined') return;
@@ -289,7 +220,7 @@ class TeluguAudioService {
 
     const audio = this.audioElement;
     const personaToUse = options.persona || this.activePersona;
-    const ttsUrl = `/api/tts?text=${encodeURIComponent(clean)}&persona=${encodeURIComponent(personaToUse)}`;
+    const ttsUrl = `/api/tts?text=${encodeURIComponent(clean)}&persona=${encodeURIComponent(personaToUse)}${options.slow ? '&slow=true' : ''}`;
 
     const handleEnded = () => {
       cleanup();
@@ -302,8 +233,18 @@ class TeluguAudioService {
     };
 
     const handleError = (e: any) => {
-      console.warn('TTS playback error, attempting SpeechSynthesis fallback:', e);
       cleanup();
+      // If AbortError caused by rapid clicks or stop calls, invoke callback so sequential drills never stall
+      if (e?.name === 'AbortError' || audio.error?.code === 20) {
+        this.isCurrentlyPlaying = false;
+        if (this.onEndCallback) {
+          const cb = this.onEndCallback;
+          this.onEndCallback = null;
+          cb();
+        }
+        return;
+      }
+      console.warn('TTS playback error, attempting SpeechSynthesis fallback:', e);
       this.fallbackSpeechSynthesis(clean, () => {
         if (this.onEndCallback) {
           const cb = this.onEndCallback;
@@ -330,6 +271,17 @@ class TeluguAudioService {
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
+        if (err?.name === 'AbortError') {
+          // Play was cancelled; cleanly invoke callback so async drills continue smoothly
+          cleanup();
+          this.isCurrentlyPlaying = false;
+          if (this.onEndCallback) {
+            const cb = this.onEndCallback;
+            this.onEndCallback = null;
+            cb();
+          }
+          return;
+        }
         console.warn('Audio play failed, falling back:', err);
         handleError(err);
       });
@@ -338,7 +290,7 @@ class TeluguAudioService {
 
   public speakPhoneme(phoneme: string, onEnd?: () => void): void {
     this.speak(phoneme, {
-      playCue: true,
+      playCue: false,
       onEnd,
     });
   }
@@ -347,13 +299,16 @@ class TeluguAudioService {
     this.isCurrentlyPlaying = false;
 
     if (this.audioElement) {
-      this.audioElement.pause();
-      this.audioElement.currentTime = 0;
-      this.audioElement.src = '';
+      try {
+        this.audioElement.pause();
+        this.audioElement.currentTime = 0;
+      } catch {}
     }
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+      try {
+        window.speechSynthesis.cancel();
+      } catch {}
     }
 
     if (this.onEndCallback) {

@@ -95,18 +95,41 @@ const PRACTICE_ITEMS: PracticeItem[] = [
 ];
 
 export default function PracticeStudioPage() {
-  const { t, language } = useApp();
+  const { t, language, token } = useApp();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [stars, setStars] = useState<number>(24);
-  const [streak, setStreak] = useState<number>(4);
+  const [stars, setStars] = useState<number>(18);
+  const [streak, setStreak] = useState<number>(3);
   const [speakingTarget, setSpeakingTarget] = useState<string | null>(null);
+  const [isDrilling, setIsDrilling] = useState<boolean>(false);
+  const cancelDrillRef = React.useRef<boolean>(false);
 
   useEffect(() => {
     teluguAudio.initVoices();
-  }, []);
+
+    // Fetch genuine student activity streak and stars from SQLite DB
+    async function fetchStudentMetrics() {
+      try {
+        const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('ecr_auth_token') : '') || '';
+        const res = await fetch('http://localhost:8000/api/student/history', {
+          headers: { Authorization: `Bearer ${authToken}` },
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.student) {
+            setStars(data.student.stars || 18);
+            setStreak(data.streakDays || 3);
+          }
+        }
+      } catch (e) {
+        console.warn('Student history metrics fetch fallback:', e);
+      }
+    }
+    fetchStudentMetrics();
+  }, [token]);
 
   const filteredItems =
     activeCategory === 'all'
@@ -115,27 +138,125 @@ export default function PracticeStudioPage() {
 
   const currentItem = filteredItems[currentIndex] || PRACTICE_ITEMS[0];
 
+  // Pre-fetch & cache syllables and word in background for instant 0ms playback
+  useEffect(() => {
+    if (!currentItem) return;
+    const tokens = [...currentItem.syllables, currentItem.word];
+    tokens.forEach((text) => {
+      fetch(`/api/tts?text=${encodeURIComponent(text)}&persona=lakshmi&slow=true`).catch(() => {});
+    });
+  }, [currentItem]);
+
   const playAudio = (word: string) => {
+    cancelDrillRef.current = true;
+    setIsDrilling(false);
     setSpeakingTarget(word);
     teluguAudio.speak(word, {
-      rate: 0.82,
-      pitch: 1.02,
+      rate: 0.85,
       playCue: true,
       onEnd: () => setSpeakingTarget(null),
     });
   };
 
+  // Structured pedagogical syllable-by-syllable drill:
+  // Speaks each syllable individually with visual highlight & pauses, then speaks the whole word!
+  const startSyllableDrill = async () => {
+    if (isDrilling) {
+      cancelDrillRef.current = true;
+      teluguAudio.stop();
+      setIsDrilling(false);
+      setSpeakingTarget(null);
+      return;
+    }
+
+    cancelDrillRef.current = false;
+    setIsDrilling(true);
+    teluguAudio.stop();
+
+    const syllables = currentItem.syllables;
+
+    // 1. Speak each syllable one-by-one with clear pedagogical gap
+    for (let i = 0; i < syllables.length; i++) {
+      if (cancelDrillRef.current) break;
+      const syl = syllables[i];
+      setSpeakingTarget(syl);
+
+      await new Promise<void>((resolve) => {
+        let isDone = false;
+        const complete = () => {
+          if (!isDone) {
+            isDone = true;
+            setTimeout(resolve, 350); // 350ms pedagogical gap
+          }
+        };
+
+        // Safety timeout so drill never stalls or skips on slow network
+        const safetyTimer = setTimeout(complete, 2200);
+
+        teluguAudio.speak(syl, {
+          playCue: false,
+          persona: 'lakshmi',
+          slow: true,
+          onEnd: () => {
+            clearTimeout(safetyTimer);
+            complete();
+          },
+        });
+      });
+    }
+
+    // 2. Conclude by speaking the complete word smoothly
+    if (!cancelDrillRef.current) {
+      setSpeakingTarget(currentItem.word);
+      await new Promise<void>((resolve) => {
+        let isDone = false;
+        const complete = () => {
+          if (!isDone) {
+            isDone = true;
+            setSpeakingTarget(null);
+            resolve();
+          }
+        };
+
+        const safetyTimer = setTimeout(complete, 3000);
+
+        teluguAudio.speak(currentItem.word, {
+          playCue: true,
+          slow: true,
+          persona: 'lakshmi',
+          onEnd: () => {
+            clearTimeout(safetyTimer);
+            complete();
+          },
+        });
+      });
+    }
+
+    setIsDrilling(false);
+    setSpeakingTarget(null);
+  };
+
   const playSyllable = (syl: string) => {
+    cancelDrillRef.current = true;
+    setIsDrilling(false);
     setSpeakingTarget(syl);
     teluguAudio.speakPhoneme(syl, () => setSpeakingTarget(null));
   };
 
   const handleNext = () => {
+    cancelDrillRef.current = true;
+    setIsDrilling(false);
+    teluguAudio.stop();
+    setSpeakingTarget(null);
     setFeedback(null);
     setCurrentIndex((prev) => (prev + 1) % filteredItems.length);
   };
 
   const handlePrev = () => {
+    cancelDrillRef.current = true;
+    setIsDrilling(false);
+    teluguAudio.stop();
+    setSpeakingTarget(null);
     setFeedback(null);
     setCurrentIndex((prev) => (prev - 1 + filteredItems.length) % filteredItems.length);
   };
@@ -220,8 +341,8 @@ export default function PracticeStudioPage() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
             {t(
-              'రాముడు తడబడిన సంయుక్తాక్షరాలు, దీర్ఘాలు మరియు అనుస్వార పదాల ప్రత్యేక సాధన.',
-              'Adaptive flashcard drills generated based on Ramu\'s identified phonemic weaknesses.'
+              `${currentUser?.nameTelugu || currentUser?.name || 'విద్యార్థి'} తడబడిన సంయుక్తాక్షరాలు, దీర్ఘాలు మరియు అనుస్వార పదాల ప్రత్యేక సాధన.`,
+              `Adaptive flashcard drills generated based on ${currentUser?.name || 'student'}'s identified phonemic weaknesses.`
             )}
           </p>
         </div>
@@ -334,10 +455,10 @@ export default function PracticeStudioPage() {
 
           {/* Audio & Mic Practice Controls */}
           <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <button
                 onClick={() => playAudio(currentItem.word)}
-                className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs border transition ${
+                className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs border transition ${
                   speakingTarget === currentItem.word
                     ? 'bg-emerald-600 text-white border-emerald-600 ring-4 ring-emerald-300/40 animate-pulse'
                     : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
@@ -347,7 +468,24 @@ export default function PracticeStudioPage() {
                 <span>
                   {speakingTarget === currentItem.word
                     ? t('ధ్వని వినిపిస్తోంది...', 'Speaking Now...')
-                    : t('స్పష్టంగా వినండి (Pure Voice)', 'Listen Pure Telugu')}
+                    : t('సాధారణ శబ్దం (Normal)', 'Normal Audio')}
+                </span>
+              </button>
+
+              <button
+                onClick={startSyllableDrill}
+                className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs border transition cursor-pointer ${
+                  isDrilling
+                    ? 'bg-indigo-600 text-white border-indigo-600 ring-4 ring-indigo-300/40 animate-pulse'
+                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-200'
+                }`}
+                title="Syllable-by-syllable slow drill mode"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-600" />
+                <span>
+                  {isDrilling
+                    ? t('అక్షరాల విరుపు డ్రిల్ నడుస్తోంది... (ఆపు)', 'Syllable Drill Playing... (Click to Stop)')
+                    : t('అక్షరాల విరుపు సాధన (Slow Syllable Drill)', 'Slow Syllable Drill')}
                 </span>
               </button>
 

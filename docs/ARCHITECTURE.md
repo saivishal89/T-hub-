@@ -40,10 +40,11 @@ graph TD
 
 ### 2.1 Frontend Architecture (`frontend/src/`)
 - **`src/app/` (Next.js 14 App Router):**
-  - `/login`: Secure email & password portal selection login (no exposed credentials, no OTP in password field).
-  - `/admin`: Administrative oversight, school registry, teacher management, student records, and AI calibration.
-  - `/teacher`: Classroom student roster, live test execution, teacher review sign-offs.
-  - `/reading-studio`: Large typography reading canvas, real-time waveform visualizer, multi-grade passage catalog.
+  - `/login`: Secure email & password portal selection login (no exposed credentials, no OTP in password field, 5 distinct portal tabs).
+  - `/admin`: Administrative oversight, school registry, teacher management, student records, system security, and AI calibration.
+  - `/deo`: Dedicated District Educational Officer Portal dynamically scoped to the caller's assigned district (mandal analytics, school inspections, FLN benchmarks).
+  - `/teacher`: Classroom student roster, live test execution, student promotion, and teacher review sign-offs.
+  - `/reading-studio`: Student reading canvas strictly locked to enrolled academic grade (Class 3), waveform visualizer, and live feedback.
   - `/tutor`: Conversational Telugu AI reading tutor with live voice dialogue, contrast feedback, and slow syllable repetition.
   - `/parent`: Parent dashboard with reading trajectory curves, audio recording playback, and home learning tips.
   - `/practice`: Akshara Sadhana flashcard drills with confetti rewards.
@@ -54,6 +55,8 @@ graph TD
 
 ### 2.2 Backend Architecture (`backend/`)
 - **`server.py`:** Production REST server with CORS allowlist, sliding-window rate limiting, maximum payload size verification (2MB), session validation, and health monitoring.
+- **`app/auth_crypto.py`:** Cryptographic security module implementing Argon2id and PBKDF2-HMAC-SHA256 (310,000 iterations) with per-user cryptographic salts.
+- **`app/db.py`:** Embedded SQLite database (`backend/data/ecr_platform.db`) managing users, sessions (8-hour expiry), sanitized audit logs, OTP verifications, and dynamic district telemetry.
 - **`app/services/telugu_speech_engine.py`:**
   - Unicode grapheme cluster segmentation for Telugu conjuncts and modifiers.
   - Dynamic Programming Levenshtein alignment between expected reference text and recognized speech.

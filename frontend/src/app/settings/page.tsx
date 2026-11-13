@@ -345,6 +345,143 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* SECTION 1.5: TELUGU PHONETIC ACCURACY & CONTRAST LAB */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-900 text-base font-telugu">
+                  {t('తెలుగు ధ్వనుల పరిశీలన లాబ్ (Telugu Phonetics Verification Lab)', 'Telugu Phonetics Verification Lab')}
+                </h2>
+                <div className="text-xs text-slate-500">
+                  {t('క్రింది బటన్లపై క్లిక్ చేసి ఒత్తులు, దీర్ఘాలు మరియు ధ్వని భేదాలను వినండి', 'Click each card to verify natural intonation, minimal pairs, and syllable distinctions')}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  teluguAudio.speak('నమస్కారం! తెలుగు అక్షరాలు మరియు పదాలను స్పష్టంగా నేర్చుకుందాం.', { persona: activePersona });
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200"
+              >
+                <Volume2 className="w-4 h-4 text-blue-600" />
+                <span>{t('టీచర్ పరిచయం వినండి', 'Play Teacher Greeting')}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Contrast 1: Tha vs Tta */}
+            <div
+              onClick={() => teluguAudio.speak('తాత . టమాటా . తాత . టమాటా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">త / ట భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తాత • టమాటా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Dental [t̪] vs Retroflex [ʈ]</div>
+            </div>
+
+            {/* Contrast 2: Dha vs Dda */}
+            <div
+              onClick={() => teluguAudio.speak('దండ . డబ్బా . దండ . డబ్బా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ద / డ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">దండ • డబ్బా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Voiced Dental [d̪] vs Retroflex [ɖ]</div>
+            </div>
+
+            {/* Contrast 3: Na vs Nna */}
+            <div
+              onClick={() => teluguAudio.speak('కన్ను . వీణ . కన్ను . వీణ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">న / ణ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">కన్ను • వీణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [n] vs Retroflex [ɳ]</div>
+            </div>
+
+            {/* Contrast 4: La vs Lla */}
+            <div
+              onClick={() => teluguAudio.speak('గాలి . నీళ్లు . గాలి . నీళ్లు', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ల / ళ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">గాలి • నీళ్లు</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [l] vs Retroflex Flap [ɭ]</div>
+            </div>
+
+            {/* Contrast 5: Sha vs Ssa vs Sa */}
+            <div
+              onClick={() => teluguAudio.speak('శివుడు . భాష . సంతోషం', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">శ / ష / స భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">శివుడు • భాష • సంతోషం</div>
+              <div className="text-[10px] text-slate-500 font-medium">Palatal / Retroflex / Dental</div>
+            </div>
+
+            {/* Contrast 6: Short vs Long Vowels */}
+            <div
+              onClick={() => teluguAudio.speak('అమ్మ . ఆవు . ఇల్లు . ఈగ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">హ్రస్వ / దీర్ఘ స్వరాలు</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">అ / ఆ • ఇ / ఈ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Short [a, i] vs Long [aː, iː]</div>
+            </div>
+
+            {/* Contrast 7: Complex Conjuncts */}
+            <div
+              onClick={() => teluguAudio.speak('రక్షణ . మిత్రుడు . విజ్ఞానం', { persona: activePersona, slow: true })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సంయుక్తాక్షరాలు (Slow)</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">క్ష • త్ర • జ్ఞ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Ksha, Tra, Jna syllable drill</div>
+            </div>
+
+            {/* Contrast 8: Conversational Intonation */}
+            <div
+              onClick={() => teluguAudio.speak('ఏమిటి రాము, ఈరోజు హోమ్‌వర్క్ పూర్తయిందా? చాలా బాగా చదివావు!', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సహజ సంభాషణ శైలి</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తెలంగాణ టీచర్ సంభాషణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Natural pause & questioning intonation</div>
+            </div>
+          </div>
+        </div>
+
         {/* SECTION 2: TEACHER VOICE CLONING STUDIO */}
         <div className="bg-gradient-to-br from-purple-50/60 via-white to-blue-50/60 rounded-3xl p-6 sm:p-8 border border-purple-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-100">
@@ -506,6 +643,143 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* SECTION 1.5: TELUGU PHONETIC ACCURACY & CONTRAST LAB */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-900 text-base font-telugu">
+                  {t('తెలుగు ధ్వనుల పరిశీలన లాబ్ (Telugu Phonetics Verification Lab)', 'Telugu Phonetics Verification Lab')}
+                </h2>
+                <div className="text-xs text-slate-500">
+                  {t('క్రింది బటన్లపై క్లిక్ చేసి ఒత్తులు, దీర్ఘాలు మరియు ధ్వని భేదాలను వినండి', 'Click each card to verify natural intonation, minimal pairs, and syllable distinctions')}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  teluguAudio.speak('నమస్కారం! తెలుగు అక్షరాలు మరియు పదాలను స్పష్టంగా నేర్చుకుందాం.', { persona: activePersona });
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200"
+              >
+                <Volume2 className="w-4 h-4 text-blue-600" />
+                <span>{t('టీచర్ పరిచయం వినండి', 'Play Teacher Greeting')}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Contrast 1: Tha vs Tta */}
+            <div
+              onClick={() => teluguAudio.speak('తాత . టమాటా . తాత . టమాటా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">త / ట భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తాత • టమాటా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Dental [t̪] vs Retroflex [ʈ]</div>
+            </div>
+
+            {/* Contrast 2: Dha vs Dda */}
+            <div
+              onClick={() => teluguAudio.speak('దండ . డబ్బా . దండ . డబ్బా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ద / డ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">దండ • డబ్బా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Voiced Dental [d̪] vs Retroflex [ɖ]</div>
+            </div>
+
+            {/* Contrast 3: Na vs Nna */}
+            <div
+              onClick={() => teluguAudio.speak('కన్ను . వీణ . కన్ను . వీణ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">న / ణ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">కన్ను • వీణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [n] vs Retroflex [ɳ]</div>
+            </div>
+
+            {/* Contrast 4: La vs Lla */}
+            <div
+              onClick={() => teluguAudio.speak('గాలి . నీళ్లు . గాలి . నీళ్లు', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ల / ళ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">గాలి • నీళ్లు</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [l] vs Retroflex Flap [ɭ]</div>
+            </div>
+
+            {/* Contrast 5: Sha vs Ssa vs Sa */}
+            <div
+              onClick={() => teluguAudio.speak('శివుడు . భాష . సంతోషం', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">శ / ష / స భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">శివుడు • భాష • సంతోషం</div>
+              <div className="text-[10px] text-slate-500 font-medium">Palatal / Retroflex / Dental</div>
+            </div>
+
+            {/* Contrast 6: Short vs Long Vowels */}
+            <div
+              onClick={() => teluguAudio.speak('అమ్మ . ఆవు . ఇల్లు . ఈగ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">హ్రస్వ / దీర్ఘ స్వరాలు</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">అ / ఆ • ఇ / ఈ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Short [a, i] vs Long [aː, iː]</div>
+            </div>
+
+            {/* Contrast 7: Complex Conjuncts */}
+            <div
+              onClick={() => teluguAudio.speak('రక్షణ . మిత్రుడు . విజ్ఞానం', { persona: activePersona, slow: true })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సంయుక్తాక్షరాలు (Slow)</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">క్ష • త్ర • జ్ఞ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Ksha, Tra, Jna syllable drill</div>
+            </div>
+
+            {/* Contrast 8: Conversational Intonation */}
+            <div
+              onClick={() => teluguAudio.speak('ఏమిటి రాము, ఈరోజు హోమ్‌వర్క్ పూర్తయిందా? చాలా బాగా చదివావు!', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సహజ సంభాషణ శైలి</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తెలంగాణ టీచర్ సంభాషణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Natural pause & questioning intonation</div>
+            </div>
+          </div>
+        </div>
+
         {/* SECTION 3: DIALECT & PACE CALIBRATION */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
           <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
@@ -585,6 +859,143 @@ export default function SettingsPage() {
                 <Volume2 className="w-4 h-4 text-amber-300" />
                 <span>{t('స్వరాన్ని పరీక్షించండి (Test Voice Output)', 'Test Pure Telugu Voice')}</span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 1.5: TELUGU PHONETIC ACCURACY & CONTRAST LAB */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+                <Volume2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-bold text-slate-900 text-base font-telugu">
+                  {t('తెలుగు ధ్వనుల పరిశీలన లాబ్ (Telugu Phonetics Verification Lab)', 'Telugu Phonetics Verification Lab')}
+                </h2>
+                <div className="text-xs text-slate-500">
+                  {t('క్రింది బటన్లపై క్లిక్ చేసి ఒత్తులు, దీర్ఘాలు మరియు ధ్వని భేదాలను వినండి', 'Click each card to verify natural intonation, minimal pairs, and syllable distinctions')}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  teluguAudio.speak('నమస్కారం! తెలుగు అక్షరాలు మరియు పదాలను స్పష్టంగా నేర్చుకుందాం.', { persona: activePersona });
+                }}
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200"
+              >
+                <Volume2 className="w-4 h-4 text-blue-600" />
+                <span>{t('టీచర్ పరిచయం వినండి', 'Play Teacher Greeting')}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Contrast 1: Tha vs Tta */}
+            <div
+              onClick={() => teluguAudio.speak('తాత . టమాటా . తాత . టమాటా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">త / ట భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తాత • టమాటా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Dental [t̪] vs Retroflex [ʈ]</div>
+            </div>
+
+            {/* Contrast 2: Dha vs Dda */}
+            <div
+              onClick={() => teluguAudio.speak('దండ . డబ్బా . దండ . డబ్బా', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ద / డ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">దండ • డబ్బా</div>
+              <div className="text-[10px] text-slate-500 font-medium">Voiced Dental [d̪] vs Retroflex [ɖ]</div>
+            </div>
+
+            {/* Contrast 3: Na vs Nna */}
+            <div
+              onClick={() => teluguAudio.speak('కన్ను . వీణ . కన్ను . వీణ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">న / ణ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">కన్ను • వీణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [n] vs Retroflex [ɳ]</div>
+            </div>
+
+            {/* Contrast 4: La vs Lla */}
+            <div
+              onClick={() => teluguAudio.speak('గాలి . నీళ్లు . గాలి . నీళ్లు', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">ల / ళ భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">గాలి • నీళ్లు</div>
+              <div className="text-[10px] text-slate-500 font-medium">Alveolar [l] vs Retroflex Flap [ɭ]</div>
+            </div>
+
+            {/* Contrast 5: Sha vs Ssa vs Sa */}
+            <div
+              onClick={() => teluguAudio.speak('శివుడు . భాష . సంతోషం', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">శ / ష / స భేదం</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">శివుడు • భాష • సంతోషం</div>
+              <div className="text-[10px] text-slate-500 font-medium">Palatal / Retroflex / Dental</div>
+            </div>
+
+            {/* Contrast 6: Short vs Long Vowels */}
+            <div
+              onClick={() => teluguAudio.speak('అమ్మ . ఆవు . ఇల్లు . ఈగ', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">హ్రస్వ / దీర్ఘ స్వరాలు</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">అ / ఆ • ఇ / ఈ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Short [a, i] vs Long [aː, iː]</div>
+            </div>
+
+            {/* Contrast 7: Complex Conjuncts */}
+            <div
+              onClick={() => teluguAudio.speak('రక్షణ . మిత్రుడు . విజ్ఞానం', { persona: activePersona, slow: true })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సంయుక్తాక్షరాలు (Slow)</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">క్ష • త్ర • జ్ఞ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Ksha, Tra, Jna syllable drill</div>
+            </div>
+
+            {/* Contrast 8: Conversational Intonation */}
+            <div
+              onClick={() => teluguAudio.speak('ఏమిటి రాము, ఈరోజు హోమ్‌వర్క్ పూర్తయిందా? చాలా బాగా చదివావు!', { persona: activePersona })}
+              className="p-3.5 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200 hover:border-blue-400 cursor-pointer transition group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-slate-900 group-hover:text-blue-700">సహజ సంభాషణ శైలి</span>
+                <Volume2 className="w-4 h-4 text-slate-400 group-hover:text-blue-600" />
+              </div>
+              <div className="text-sm font-telugu font-bold text-blue-900 mb-0.5">తెలంగాణ టీచర్ సంభాషణ</div>
+              <div className="text-[10px] text-slate-500 font-medium">Natural pause & questioning intonation</div>
             </div>
           </div>
         </div>

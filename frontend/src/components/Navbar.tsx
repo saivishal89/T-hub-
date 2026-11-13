@@ -27,6 +27,8 @@ import {
   FileCheck,
   CheckCircle,
   UserCheck,
+  School,
+  Gamepad2,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -111,12 +113,12 @@ export default function Navbar() {
     { href: '/settings', labelTe: 'ప్రొఫైల్', labelEn: 'Profile', icon: Settings },
   ];
 
-  // 3. STUDENT EXCLUSIVE NAVIGATION (Gamified, Child-friendly)
+  // 3. STUDENT EXCLUSIVE NAVIGATION (Canonical 4-item sequence with professional Lucide icons)
   const studentLinks: NavLinkItem[] = [
-    { href: '/reading-studio', labelTe: '📖 కథల గది', labelEn: 'Reading Studio', icon: BookOpen, highlight: true },
-    { href: '/tutor', labelTe: '🤖 AI గురువు', labelEn: 'AI Reading Tutor', icon: Bot, highlight: true },
-    { href: '/practice', labelTe: '🎮 అక్షర సాధన', labelEn: 'Word Practice', icon: Award },
-    { href: '/student-profile', labelTe: '⭐ నా ప్రగతి', labelEn: 'My Progress', icon: GraduationCap },
+    { href: '/reading-studio', labelTe: 'కథల గది', labelEn: 'Story Room', icon: BookOpen },
+    { href: '/tutor', labelTe: 'AI గురువు', labelEn: 'AI Teacher', icon: Bot },
+    { href: '/practice', labelTe: 'అక్షర సాధన', labelEn: 'Character Practice', icon: Gamepad2 },
+    { href: '/student-profile', labelTe: 'నా ప్రగతి', labelEn: 'My Progress', icon: BarChart3 },
   ];
 
   // 4. PARENT EXCLUSIVE NAVIGATION
@@ -127,6 +129,15 @@ export default function Navbar() {
     { href: '/parent?tab=report', labelTe: 'నివేదిక డౌన్‌లోడ్', labelEn: 'Download Report', icon: FileCheck },
   ];
 
+  // 5. DEO EXCLUSIVE NAVIGATION (District Level Oversight)
+  const deoLinks: NavLinkItem[] = [
+    { href: '/deo', labelTe: 'జిల్లా డ్యాష్‌బోర్డ్', labelEn: 'District Dashboard', icon: Building2 },
+    { href: '/deo?tab=mandals', labelTe: 'మండలాల పురోగతి', labelEn: 'Mandal Progress', icon: BarChart3 },
+    { href: '/deo?tab=schools', labelTe: 'పాఠశాలల పరిశీలన', labelEn: 'School Oversight', icon: School },
+    { href: '/notifications', labelTe: 'నోటిఫికేషన్లు', labelEn: 'Notifications', icon: Award },
+    { href: '/settings', labelTe: 'సెట్టింగ్స్', labelEn: 'Settings', icon: Settings },
+  ];
+
   // Strictly bind navigation to current authenticated role
   const currentNavLinks: NavLinkItem[] =
     role === 'student'
@@ -135,6 +146,8 @@ export default function Navbar() {
       ? parentLinks
       : role === 'teacher'
       ? teacherLinks
+      : role === 'district_officer'
+      ? deoLinks
       : adminLinks;
 
   // Role Theme Styling
@@ -296,14 +309,14 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     isActive
                       ? 'bg-blue-50 text-blue-700 shadow-xs border border-blue-200/60 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   } ${link.highlight ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span>{t(link.labelTe, link.labelEn)}</span>
+                  <Icon className={`w-4 h-4 pointer-events-none ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span className="pointer-events-none">{t(link.labelTe, link.labelEn)}</span>
                 </Link>
               );
             })}
@@ -328,12 +341,13 @@ export default function Navbar() {
 
             {/* Secure Logout Button */}
             <button
+              type="button"
               onClick={logout}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 text-slate-700 hover:text-red-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 text-slate-700 hover:text-red-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
               title="Secure Logout"
             >
-              <LogOut className="w-3.5 h-3.5 text-red-500" />
-              <span className="hidden sm:inline">{t('లాగ్ అవుట్', 'Logout')}</span>
+              <LogOut className="w-3.5 h-3.5 text-red-500 pointer-events-none" />
+              <span className="hidden sm:inline pointer-events-none">{t('లాగ్ అవుట్', 'Logout')}</span>
             </button>
 
             {/* Mobile Menu Trigger */}
@@ -362,12 +376,12 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold ${
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer ${
                   isActive ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <Icon className="w-4 h-4 text-slate-500" />
-                <span>{t(link.labelTe, link.labelEn)}</span>
+                <Icon className="w-4 h-4 text-slate-500 pointer-events-none" />
+                <span className="pointer-events-none">{t(link.labelTe, link.labelEn)}</span>
               </Link>
             );
           })}

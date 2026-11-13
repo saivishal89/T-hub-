@@ -7,7 +7,7 @@ import { MOCK_USERS } from '../lib/mockData';
 
 interface AppContextType {
   role: Role;
-  currentUser: UserAccount;
+  currentUser: UserAccount | null;
   isAuthenticated: boolean;
   token: string | null;
   language: Language;
@@ -26,10 +26,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Authentication State
-  const [currentUser, setCurrentUser] = useState<UserAccount>(MOCK_USERS.teacher);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [token, setToken] = useState<string | null>('ecr_local_token');
+  // Authentication State (Never hardcode fallback user to prevent data cross-contamination)
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [token, setToken] = useState<string | null>(null);
   const [language, setLanguageState] = useState<Language>('te');
   const [voiceGender, setVoiceGenderState] = useState<VoiceGender>('female');
 
@@ -41,12 +41,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const savedLang = localStorage.getItem('ecr_lang') as Language;
       const savedVoice = localStorage.getItem('ecr_voice_gender') as VoiceGender;
 
-      if (savedUser) {
+      if (savedUser && savedToken) {
         const parsed = JSON.parse(savedUser);
         setCurrentUser(parsed);
         setIsAuthenticated(true);
+        setToken(savedToken);
       }
-      if (savedToken) setToken(savedToken);
       if (savedLang) setLanguageState(savedLang);
       if (savedVoice) setVoiceGenderState(savedVoice);
     } catch (e) {
@@ -106,7 +106,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return currentUser.permissions?.includes(permission) ?? false;
   };
 
-  // Real Email & Password Login
+  // Real Email & Password Login - Strictly Backend API Authenticated (Zero Client Fallback)
   const login = async (
     email: string,
     pass: string,
@@ -114,16 +114,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ success: boolean; error?: string }> => {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. Attempt Backend API authentication
     try {
-      const res = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: cleanEmail, password: pass, role: requestedRole }),
-      });
+      let res: Response;
+      try {
+        res = await fetch('http://127.0.0.1:8000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: cleanEmail, password: pass, role: requestedRole }),
+        });
+      } catch {
+        // Fallback to Next.js reverse-proxy rewrite to bypass browser origin blocks
+        res = await fetch('/backend-api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: cleanEmail, password: pass, role: requestedRole }),
+        });
+      }
 
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.token && data.user) {
         const user = data.user as UserAccount;
         setCurrentUser(user);
         setIsAuthenticated(true);
@@ -131,49 +143,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('ecr_current_user', JSON.stringify(user));
         localStorage.setItem('ecr_auth_token', data.token);
 
-        // Redirect based on role
+        // Redirect based on backend-verified role
         redirectUserByRole(user.role);
         return { success: true };
+      } else {
+        return {
+          success: false,
+          error: data.error || 'లాగిన్ విఫలమైంది. దయచేసి మీ వివరాలు సరిచూసుకోండి (Authentication failed).',
+        };
       }
     } catch {
-      // Backend offline or starting, fall through to client-side credential validation
+      return {
+        success: false,
+        error: 'అథెంటికేషన్ సర్వర్‌కు కనెక్ట్ అవ్వడంలో సమస్య ఏర్పడింది. దయచేసి పైథాన్ సర్వర్ (Port 8000) రన్ అవుతుందో లేదో సరిచూడండి (Authentication server unreachable on port 8000).',
+      };
     }
-
-    // 2. Client-side robust credential validation for offline/standalone execution
-    const validCredentials: Record<string, { pass: string; user: UserAccount }> = {
-      'admin@telangana.gov.in': { pass: 'Admin@1234', user: MOCK_USERS.admin },
-      'lakshmi.teacher@telangana.gov.in': { pass: 'Teacher@1234', user: MOCK_USERS.teacher },
-      'ramu.student@school.gov.in': { pass: 'Student@1234', user: MOCK_USERS.student },
-      'parent.ramu@gmail.com': { pass: 'Parent@1234', user: MOCK_USERS.parent },
-    };
-
-    const record = validCredentials[cleanEmail];
-    if (!record) {
-      return { success: false, error: 'ఈ ఈమెయిల్ తో ఖాతా కనుగొనబడలేదు (Account not found with this email).' };
-    }
-
-    if (record.pass !== pass) {
-      return { success: false, error: 'పాస్‌వర్డ్ సరిపోలలేదు (Incorrect password). దయచేసి మళ్ళీ ప్రయత్నించండి.' };
-    }
-
-    const matchedUser = record.user;
-    if (requestedRole && matchedUser.role !== requestedRole) {
-      return { success: false, error: `ఈ ఖాతాకి '${requestedRole}' పాత్ర అనుమతి లేదు (Access denied for this role).` };
-    }
-
-    setCurrentUser(matchedUser);
-    setIsAuthenticated(true);
-    setToken(`ecr_token_${Date.now()}`);
-    localStorage.setItem('ecr_current_user', JSON.stringify(matchedUser));
-    localStorage.setItem('ecr_auth_token', `ecr_token_${Date.now()}`);
-
-    redirectUserByRole(matchedUser.role);
-    return { success: true };
   };
 
   const redirectUserByRole = (userRole: Role) => {
-    if (userRole === 'admin' || userRole === 'super_admin' || userRole === 'district_officer') {
+    if (userRole === 'admin' || userRole === 'super_admin') {
       router.push('/admin');
+    } else if (userRole === 'district_officer') {
+      router.push('/deo');
     } else if (userRole === 'teacher') {
       router.push('/teacher');
     } else if (userRole === 'student') {
@@ -188,8 +179,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setIsAuthenticated(false);
     setToken(null);
-    localStorage.removeItem('ecr_current_user');
-    localStorage.removeItem('ecr_auth_token');
+    setCurrentUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('ecr_current_user');
+      localStorage.removeItem('ecr_auth_token');
+      localStorage.removeItem('ecr_active_passage_id');
+      localStorage.removeItem('ecr_spoken_transcript');
+      localStorage.removeItem('ecr_duration');
+    }
     router.push('/login');
   };
 
