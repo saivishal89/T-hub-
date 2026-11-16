@@ -114,25 +114,25 @@ export default function HomePage() {
               href="/reading-studio"
               className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm sm:text-base shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
-              <Mic className="w-5 h-5 text-amber-300 animate-pulse pointer-events-none" />
-              <span className="pointer-events-none">{t('పఠన పరీక్ష ప్రారంభించండి (Live Studio)', 'Start Live Reading Assessment')}</span>
-              <ArrowRight className="w-4 h-4 ml-1 pointer-events-none" />
+              <Mic className="w-5 h-5 text-amber-300 animate-pulse" />
+              <span>{t('పఠన పరీక్ష ప్రారంభించండి (Live Studio)', 'Start Live Reading Assessment')}</span>
+              <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
 
             <Link
               href="/assessment-result"
               className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-sm sm:text-base backdrop-blur-md transition cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-emerald-400 pointer-events-none" />
-              <span className="pointer-events-none">{t('AI ఫలితాల డెమో చూడండి', 'View AI Diagnostic Demo')}</span>
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <span>{t('AI ఫలితాల డెమో చూడండి', 'View AI Diagnostic Demo')}</span>
             </Link>
 
             <Link
               href="/teacher"
               className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm sm:text-base transition cursor-pointer"
             >
-              <Users className="w-4 h-4 text-blue-400 pointer-events-none" />
-              <span className="pointer-events-none">{t('ఉపాధ్యాయుల వేదిక', 'Teacher Classroom Hub')}</span>
+              <Users className="w-4 h-4 text-blue-400" />
+              <span>{t('ఉపాధ్యాయుల వేదిక', 'Teacher Classroom Hub')}</span>
             </Link>
           </div>
 

@@ -19,7 +19,7 @@ git add .
 
 echo.
 echo [3/4] Committing changes...
-git commit -m "fix(auth): enable any Gmail direct join, Google sign-in fallback, and serverless SQLite support"
+git commit -m "fix(ui,auth): instant first-click buttons with touch-action and onMouseDown, and resilient login fallback"
 
 echo.
 echo [4/4] Pushing to main branch on GitHub...

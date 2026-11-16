@@ -315,8 +315,8 @@ export default function Navbar() {
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   } ${link.highlight ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : ''}`}
                 >
-                  <Icon className={`w-4 h-4 pointer-events-none ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-                  <span className="pointer-events-none">{t(link.labelTe, link.labelEn)}</span>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <span>{t(link.labelTe, link.labelEn)}</span>
                 </Link>
               );
             })}
@@ -346,8 +346,8 @@ export default function Navbar() {
               className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 text-slate-700 hover:text-red-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
               title="Secure Logout"
             >
-              <LogOut className="w-3.5 h-3.5 text-red-500 pointer-events-none" />
-              <span className="hidden sm:inline pointer-events-none">{t('లాగ్ అవుట్', 'Logout')}</span>
+              <LogOut className="w-3.5 h-3.5 text-red-500" />
+              <span className="hidden sm:inline">{t('లాగ్ అవుట్', 'Logout')}</span>
             </button>
 
             {/* Mobile Menu Trigger */}
@@ -380,8 +380,8 @@ export default function Navbar() {
                   isActive ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <Icon className="w-4 h-4 text-slate-500 pointer-events-none" />
-                <span className="pointer-events-none">{t(link.labelTe, link.labelEn)}</span>
+                <Icon className="w-4 h-4 text-slate-500" />
+                <span>{t(link.labelTe, link.labelEn)}</span>
               </Link>
             );
           })}

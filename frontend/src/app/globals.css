@@ -54,3 +54,24 @@ body {
   animation: mic-pulse 1.8s infinite;
 }
 
+/* Fix: Ensure all clickable elements respond instantly on first click */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button > svg,
+button > span,
+button > div,
+a > svg,
+a > span,
+a > div,
+[role="button"] > svg,
+[role="button"] > span {
+  pointer-events: none;
+}
+
