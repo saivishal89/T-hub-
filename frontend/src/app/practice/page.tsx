@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '../../context/AppContext';
 import { teluguAudio } from '../../lib/teluguAudioService';
+import { resolveApiUrl } from '../../lib/apiConfig';
 import {
   Award,
   Sparkles,
@@ -113,11 +114,19 @@ export default function PracticeStudioPage() {
     async function fetchStudentMetrics() {
       try {
         const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('ecr_auth_token') : '') || '';
-        const res = await fetch('http://localhost:8000/api/student/history', {
+        let res = await fetch(resolveApiUrl('/api/student/history'), {
           headers: { Authorization: `Bearer ${authToken}` },
           credentials: 'include',
-        });
-        if (res.ok) {
+        }).catch(() => null);
+
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8000/api/student/history', {
+            headers: { Authorization: `Bearer ${authToken}` },
+            credentials: 'include',
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           if (data && data.student) {
             setStars(data.student.stars || 18);

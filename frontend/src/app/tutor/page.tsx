@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { TutorInteractionResult, VoiceGender } from '@/types';
+import { resolveApiUrl } from '@/lib/apiConfig';
 import confetti from 'canvas-confetti';
 import {
   Mic,
@@ -174,7 +175,7 @@ export default function TeluguAiTutorPage() {
         : 'lakshmi';
 
     try {
-      const res = await fetch('http://localhost:8000/api/tutor/evaluate', {
+      let res = await fetch(resolveApiUrl('/api/tutor/evaluate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -182,9 +183,21 @@ export default function TeluguAiTutorPage() {
           spokenText: spokenText,
           voicePersona: persona,
         }),
-      });
+      }).catch(() => null);
 
-      if (res.ok) {
+      if (!res || !res.ok) {
+        res = await fetch('http://localhost:8000/api/tutor/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetWord: currentWord.word,
+            spokenText: spokenText,
+            voicePersona: persona,
+          }),
+        }).catch(() => null);
+      }
+
+      if (res && res.ok) {
         const result: TutorInteractionResult = await res.json();
         setFeedbackResult(result);
 

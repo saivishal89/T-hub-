@@ -56,7 +56,7 @@ from app.db import (
 init_db()
 
 HOST = "0.0.0.0"
-PORT = 8000
+PORT = int(os.environ.get("PORT", 8000))
 MAX_REQUEST_BYTES = 2 * 1024 * 1024  # 2MB maximum payload guardrail
 
 # Sliding Window Rate Limiter

@@ -7,6 +7,7 @@ import { useApp } from '../../context/AppContext';
 import { WordAnalysis, AssessmentResult } from '../../types';
 import { teluguAudio } from '../../lib/teluguAudioService';
 import { evaluateDynamicReading } from '../../lib/dynamicEvaluation';
+import { resolveApiUrl } from '../../lib/apiConfig';
 import {
   Sparkles,
   Award,
@@ -81,7 +82,7 @@ function AssessmentResultContent() {
         });
 
         try {
-          res = await fetch('http://127.0.0.1:8000/api/student/assessment', {
+          res = await fetch(resolveApiUrl('/api/student/assessment'), {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -91,7 +92,7 @@ function AssessmentResultContent() {
             body: payload,
           });
         } catch {
-          res = await fetch('/backend-api/student/assessment', {
+          res = await fetch('http://127.0.0.1:8000/api/student/assessment', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -130,7 +131,7 @@ function AssessmentResultContent() {
       });
 
       try {
-        await fetch('http://127.0.0.1:8000/api/student/assessment', {
+        await fetch(resolveApiUrl('/api/student/assessment'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -140,7 +141,7 @@ function AssessmentResultContent() {
           body: payload,
         });
       } catch {
-        await fetch('/backend-api/student/assessment', {
+        await fetch('http://127.0.0.1:8000/api/student/assessment', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

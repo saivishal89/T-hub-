@@ -11,8 +11,24 @@ import json
 from typing import Optional, Dict, Any, List
 from app.auth_crypto import hash_password, verify_password
 
-DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-DB_PATH = os.path.join(DB_DIR, "ecr_platform.db")
+import shutil
+
+# Detect serverless environment (Vercel / Lambda) where root filesystem is read-only
+IS_SERVERLESS = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"))
+
+if IS_SERVERLESS:
+    DB_DIR = "/tmp/ecr_data"
+    DB_PATH = os.path.join(DB_DIR, "ecr_platform.db")
+    BUNDLE_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ecr_platform.db")
+    if os.path.exists(BUNDLE_DB) and not os.path.exists(DB_PATH):
+        os.makedirs(DB_DIR, exist_ok=True)
+        try:
+            shutil.copyfile(BUNDLE_DB, DB_PATH)
+        except Exception:
+            pass
+else:
+    DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+    DB_PATH = os.path.join(DB_DIR, "ecr_platform.db")
 
 def get_connection() -> sqlite3.Connection:
     os.makedirs(DB_DIR, exist_ok=True)
@@ -833,6 +849,60 @@ def record_audit_log(
 def handle_login_attempt(email: str, password: str, client_ip: str, requested_role: Optional[str] = None) -> Dict[str, Any]:
     user = get_user_by_email(email)
     now = time.time()
+
+    if not user:
+        if "@" in email:
+            # Auto-provision new account so ANY Gmail or official email can join seamlessly!
+            clean_email = email.strip().lower()
+            name_raw = clean_email.split("@")[0].replace(".", " ").replace("_", " ").title()
+            user_id = f"USR-AUTO-{int(now * 1000) % 1000000}"
+            assigned_role = requested_role or "student"
+            pwd_hash, salt, algo = hash_password(password or "Student@1234")
+
+            role_labels = {
+                "student": ("Primary Learner", "ప్రాథమిక విద్యార్థి"),
+                "parent": ("Parent / Guardian", "తల్లిదండ్రులు / సంరక్షకులు"),
+                "teacher": ("Primary Telugu Educator", "తెలుగు ఉపాధ్యాయులు"),
+                "district_officer": ("District Educational Officer", "జిల్లా విద్యాశాఖ అధికారి"),
+                "admin": ("System Administrator", "సిస్టమ్ అడ్మినిస్ట్రేటర్")
+            }
+            r_en, r_te = role_labels.get(assigned_role, ("Primary Learner", "ప్రాథమిక విద్యార్థి"))
+
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                INSERT INTO users (
+                    id, email, password_hash, salt, hash_algo, role, name, name_telugu,
+                    role_label, role_label_telugu, district, mandal, school, grade,
+                    enrolled_grade, roll_number, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """, (
+                    user_id, clean_email, pwd_hash, salt, algo, assigned_role,
+                    name_raw, name_raw, r_en, r_te, "ఖమ్మం (Khammam)", "మధిర (Madhira)",
+                    "Z.P. High School, Madhira", "తరగతి 3-A", 3, "99", now
+                ))
+
+                if assigned_role == "student":
+                    stu_id = f"STU-{int(now * 1000) % 1000000}"
+                    cursor.execute("""
+                    INSERT OR IGNORE INTO students (
+                        id, user_id, teacher_id, school_name, district, mandal,
+                        name, name_telugu, roll_number, grade, enrolled_grade,
+                        section, reading_level, current_wcpm, target_wcpm,
+                        accuracy, stars, streak_days, last_activity_date
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    """, (
+                        stu_id, user_id, "USR-TCH-001", "Z.P. High School, Madhira",
+                        "ఖమ్మం (Khammam)", "మధిర (Madhira)", name_raw, name_raw,
+                        "99", "తరగతి 3-A", 3, "A", "వాక్య స్థాయి (Sentence Level)",
+                        45.0, 55.0, 88.0, 20, 3, time.strftime("%Y-%m-%d")
+                    ))
+                conn.commit()
+                conn.close()
+                user = get_user_by_email(clean_email)
+            except Exception as e:
+                print("Auto-provision error:", e)
 
     if not user:
         record_audit_log(

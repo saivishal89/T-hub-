@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useApp } from '../../context/AppContext';
+import { resolveApiUrl } from '../../lib/apiConfig';
 import {
   Award,
   BookOpen,
@@ -53,7 +54,7 @@ export default function StudentProfilePage() {
         const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('ecr_auth_token') : '') || '';
         let res: Response;
         try {
-          res = await fetch('http://127.0.0.1:8000/api/student/history', {
+          res = await fetch(resolveApiUrl('/api/student/history'), {
             headers: {
               Authorization: `Bearer ${authToken}`,
               'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export default function StudentProfilePage() {
             credentials: 'include',
           });
         } catch {
-          res = await fetch('/backend-api/student/history', {
+          res = await fetch('http://127.0.0.1:8000/api/student/history', {
             headers: {
               Authorization: `Bearer ${authToken}`,
               'Content-Type': 'application/json',

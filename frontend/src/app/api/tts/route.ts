@@ -136,13 +136,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 2. PRIMARY: Fetch authentic Neural Voices from Python backend
+  // 2. PRIMARY: Fetch authentic Neural Voices from Python backend using Vercel Service Binding
   try {
-    const backendUrl = `http://localhost:8000/api/tts?text=${encodeURIComponent(
-      cleanText
-    )}&persona=${encodeURIComponent(persona)}${isSlow ? '&slow=true' : ''}`;
+    const backendBase = process.env.BACKEND_URL || 'http://localhost:8000';
+    const targetUrl = new URL('/api/tts', backendBase);
+    targetUrl.searchParams.set('text', cleanText);
+    targetUrl.searchParams.set('persona', persona);
+    if (isSlow) targetUrl.searchParams.set('slow', 'true');
 
-    const backendRes = await fetch(backendUrl, {
+    const backendRes = await fetch(targetUrl.toString(), {
       cache: 'no-store',
       signal: AbortSignal.timeout(8000),
     });

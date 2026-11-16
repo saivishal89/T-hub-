@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { DISTRICT_ANALYTICS } from '@/lib/mockData';
@@ -67,7 +67,7 @@ const SAMPLE_TEACHERS: TeacherRecord[] = [
   { id: 'TCH-105', name: 'Smt. B. Padmavathi', nameTelugu: 'శ్రీమతి బి. పద్మావతి', email: 'padma.b@telangana.gov.in', school: 'Govt Model School, Khammam', assignedGrade: 'తరగతి 5-A', assessmentsDone: 51, verifiedCount: 50, status: 'Active' },
 ];
 
-export default function AdminAnalyticsPage() {
+function AdminAnalyticsPageContent() {
   const { t, language, voiceGender, setVoiceGender } = useApp();
   const searchParams = useSearchParams();
 
@@ -631,5 +631,19 @@ export default function AdminAnalyticsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminAnalyticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[60vh] flex items-center justify-center text-slate-500 text-sm">
+          అడ్మిన్ డేటా లోడ్ అవుతోంది... (Loading admin console...)
+        </div>
+      }
+    >
+      <AdminAnalyticsPageContent />
+    </Suspense>
   );
 }

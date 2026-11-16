@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
+import { resolveApiUrl } from '@/lib/apiConfig';
 import {
   School,
   TrendingUp,
@@ -71,14 +72,23 @@ export default function DeoPortalPage() {
 
     try {
       const authToken = token || localStorage.getItem('ecr_auth_token') || '';
-      const res = await fetch('http://localhost:8000/api/deo/dashboard', {
+      let res = await fetch(resolveApiUrl('/api/deo/dashboard'), {
         headers: {
           Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
-      });
+      }).catch(() => null);
 
-      if (res.ok) {
+      if (!res || !res.ok) {
+        res = await fetch('http://localhost:8000/api/deo/dashboard', {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        }).catch(() => null);
+      }
+
+      if (res && res.ok) {
         const data = await res.json();
         setDistrictData(data.districtTelemetry);
       } else {

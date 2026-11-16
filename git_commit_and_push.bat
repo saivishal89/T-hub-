@@ -19,7 +19,7 @@ git add .
 
 echo.
 echo [3/4] Committing changes...
-git commit -m "fix: resolve practice currentUser error, tune neural voice frequencies (male/child/female), and isolate student profile data"
+git commit -m "fix(auth): enable any Gmail direct join, Google sign-in fallback, and serverless SQLite support"
 
 echo.
 echo [4/4] Pushing to main branch on GitHub...

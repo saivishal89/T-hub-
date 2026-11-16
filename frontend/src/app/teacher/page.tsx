@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { MOCK_STUDENTS_CLASS3A, TELUGU_PASSAGES } from '@/lib/mockData';
 import { StudentProgress } from '@/types';
+import { resolveApiUrl } from '@/lib/apiConfig';
 import {
   Users,
   Search,
@@ -42,13 +43,23 @@ export default function TeacherDashboardPage() {
     async function loadClassroomStudents() {
       try {
         const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('ecr_auth_token') : '') || '';
-        const res = await fetch('http://localhost:8000/api/students', {
+        let res = await fetch(resolveApiUrl('/api/students'), {
           headers: {
             Authorization: `Bearer ${authToken}`,
           },
           credentials: 'include',
-        });
-        if (res.ok) {
+        }).catch(() => null);
+
+        if (!res || !res.ok) {
+          res = await fetch('http://localhost:8000/api/students', {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+            credentials: 'include',
+          }).catch(() => null);
+        }
+
+        if (res && res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.students) && data.students.length > 0) {
             const mapped: StudentProgress[] = data.students.map((s: any) => ({
