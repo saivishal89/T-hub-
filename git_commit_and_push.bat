@@ -19,7 +19,7 @@ git add .
 
 echo.
 echo [3/4] Committing changes...
-git commit -m "fix(student-portal): correct student dashboard data isolation, canonical navigation sequence, remove emojis, and fix first-click reliability"
+git commit -m "fix: resolve practice currentUser error, tune neural voice frequencies (male/child/female), and isolate student profile data"
 
 echo.
 echo [4/4] Pushing to main branch on GitHub...
@@ -30,4 +30,3 @@ echo ===================================================================
 echo   Git Push Process Complete!
 echo ===================================================================
 pause
-

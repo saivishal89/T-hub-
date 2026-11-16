@@ -106,14 +106,17 @@ export async function GET(request: NextRequest) {
   // Return cached audio immediately (0ms latency for repeated words & syllables)
   if (ttsCache.has(cacheKey)) {
     const cached = ttsCache.get(cacheKey)!;
-    return new NextResponse(cached.buffer, {
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        'Content-Length': cached.buffer.byteLength.toString(),
-        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
-        'X-Voice-Engine': `${cached.engine}-Cached`,
-      },
-    });
+    // Do not serve generic female Google fallback when a distinct male or child persona was requested
+    if (!(cached.engine === 'Google-Fallback' && (persona === 'srinivas' || persona === 'child' || persona === 'mohan'))) {
+      return new NextResponse(cached.buffer, {
+        headers: {
+          'Content-Type': 'audio/mpeg',
+          'Content-Length': cached.buffer.byteLength.toString(),
+          'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+          'X-Voice-Engine': `${cached.engine}-Cached`,
+        },
+      });
+    }
   }
 
   // 1. If persona is Anisha (Falcon) and Murf API Key is provided, call live Murf Falcon streaming API
@@ -141,7 +144,7 @@ export async function GET(request: NextRequest) {
 
     const backendRes = await fetch(backendUrl, {
       cache: 'no-store',
-      signal: AbortSignal.timeout(1800),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (backendRes.ok) {

@@ -97,20 +97,20 @@ async def generate_edge_tts(text: str, persona: str = "lakshmi", slow: bool = Fa
 
     if persona in ("srinivas", "mohan", "male"):
         voice = "te-IN-MohanNeural"
-        pitch = "+0Hz"
-        rate = "-20%" if slow else "-8%"
+        pitch = "-6Hz"
+        rate = "-22%" if slow else "-10%"
     elif persona in ("child", "ananya"):
         voice = "te-IN-ShrutiNeural"
-        pitch = "+2Hz"
-        rate = "-15%" if slow else "+0%"
+        pitch = "+8Hz"
+        rate = "-12%" if slow else "+4%"
     elif persona == "anisha":
         voice = "te-IN-ShrutiNeural"
-        pitch = "+0Hz"
-        rate = "-5%"
+        pitch = "+2Hz"
+        rate = "-2%"
     else:  # 'lakshmi' / female default
         voice = "te-IN-ShrutiNeural"
         pitch = "+0Hz"
-        rate = "-20%" if slow else "-8%"
+        rate = "-20%" if slow else "-6%"
 
     comm = edge_tts.Communicate(conditioned_text, voice, pitch=pitch, rate=rate)
     chunks = []

@@ -125,18 +125,28 @@ class TeluguAudioService {
   }
 
   /**
-   * Configures audio playback preserving authentic neural speech without artificial distortion.
-   * Dedicated distinct neural voices (te-IN-ShrutiNeural & te-IN-MohanNeural) require zero DSP pitch warping.
+   * Configures audio playback with acoustic DSP modulation tailored to each persona:
+   * - srinivas: Deep male fundamental frequency and calm educator cadence (playbackRate: 0.88)
+   * - child (ananya): High bright child resonance and energetic peer speed (playbackRate: 1.15)
+   * - lakshmi: Warm maternal SGT teacher cadence (playbackRate: 0.98)
+   * - anisha: Clear modern AI conversational cadence (playbackRate: 1.02)
    */
   private applyPersonaDSP(audio: HTMLAudioElement, persona: VoicePersona): void {
     try {
-      if (persona === 'cloned') {
-        // Only apply custom acoustic profile for teacher's cloned voice sample
+      if (persona === 'srinivas') {
+        // Deep resonant male character frequency
+        audio.playbackRate = 0.88;
+      } else if (persona === 'child') {
+        // High, bright youthful child peer frequency
+        audio.playbackRate = 1.15;
+      } else if (persona === 'cloned') {
         const factor = this.clonedProfile.pitchFactor || 1.0;
         audio.playbackRate = Math.max(0.85, Math.min(1.15, factor));
+      } else if (persona === 'anisha') {
+        audio.playbackRate = 1.02;
       } else {
-        // Natural transparent playback for genuine Microsoft Neural models
-        audio.playbackRate = 1.0;
+        // 'lakshmi' warm teacher female cadence
+        audio.playbackRate = 0.98;
       }
     } catch {
       audio.playbackRate = 1.0;
@@ -144,9 +154,9 @@ class TeluguAudioService {
   }
 
   /**
-   * Fallback to browser SpeechSynthesis
+   * Fallback to browser SpeechSynthesis with distinct male/child/female pitch & rate
    */
-  private fallbackSpeechSynthesis(text: string, onDone?: () => void) {
+  private fallbackSpeechSynthesis(text: string, onDone?: () => void, requestedPersona?: VoicePersona) {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       if (onDone) onDone();
       return;
@@ -156,8 +166,18 @@ class TeluguAudioService {
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(text);
       utt.lang = 'te-IN';
-      utt.rate = this.activePersona === 'child' ? 1.05 : 0.85;
-      utt.pitch = this.activePersona === 'child' ? 1.3 : this.activePersona === 'srinivas' ? 0.85 : 1.05;
+      const p = requestedPersona || this.activePersona;
+
+      if (p === 'srinivas') {
+        utt.pitch = 0.62; // Deep Male Pitch (authoritative masculine frequency)
+        utt.rate = 0.82;  // Calm Male Speed
+      } else if (p === 'child') {
+        utt.pitch = 1.45; // High Child Pitch (youthful peer frequency)
+        utt.rate = 1.10;  // Energetic Child Speed
+      } else {
+        utt.pitch = 1.0;  // Standard Warm Female Pitch
+        utt.rate = 0.90;  // Teacher SGT Speed
+      }
 
       const voices = window.speechSynthesis.getVoices();
       const teVoice = voices.find((v) => v.lang.startsWith('te'));
@@ -251,7 +271,7 @@ class TeluguAudioService {
           this.onEndCallback = null;
           cb();
         }
-      });
+      }, personaToUse);
     };
 
     const cleanup = () => {
@@ -302,13 +322,13 @@ class TeluguAudioService {
       try {
         this.audioElement.pause();
         this.audioElement.currentTime = 0;
-      } catch {}
+      } catch { }
     }
 
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
         window.speechSynthesis.cancel();
-      } catch {}
+      } catch { }
     }
 
     if (this.onEndCallback) {

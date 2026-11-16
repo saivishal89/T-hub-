@@ -95,7 +95,7 @@ const PRACTICE_ITEMS: PracticeItem[] = [
 ];
 
 export default function PracticeStudioPage() {
-  const { t, language, token } = useApp();
+  const { t, language, token, currentUser } = useApp();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
