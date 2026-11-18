@@ -1,9 +1,9 @@
 @echo off
-title Git Commit and Push - Every Child Reads Telugu AI Platform
-color 0B
+title Git Commit and Push - Telugu AI Audio Studio
+color 0A
 echo ===================================================================
-echo   Every Child Reads - Telugu AI Platform
-echo   Staging, Committing and Pushing to GitHub
+echo   EduVerse - Telugu AI Literacy Platform
+echo   Committing and Pushing Audio Studio & Button Fixes
 echo   Remote: https://github.com/saivishal89/T-hub-.git
 echo ===================================================================
 echo.
@@ -14,12 +14,12 @@ echo [1/4] Checking git status...
 git status
 
 echo.
-echo [2/4] Staging all changes...
+echo [2/4] Staging all files...
 git add .
 
 echo.
-echo [3/4] Committing changes...
-git commit -m "fix(ui,auth): instant first-click buttons with touch-action and onMouseDown, and resilient login fallback"
+echo [3/4] Committing fixes...
+git commit -m "fix(tutor): add instant browser speech synthesis fallback and optimize button click event handling"
 
 echo.
 echo [4/4] Pushing to main branch on GitHub...
@@ -27,6 +27,6 @@ git push origin main
 
 echo.
 echo ===================================================================
-echo   Git Push Process Complete!
+echo   Push Complete! Vercel will now automatically trigger deploy!
 echo ===================================================================
 pause

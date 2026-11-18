@@ -100,31 +100,38 @@ function AdminAnalyticsPageContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Executive Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{t('తెలంగాణ విద్యాశాఖ – రాష్ట్ర & జిల్లా అడ్మిన్ కన్సోల్', 'State School Education Admin Console')}</span>
+      {/* Executive Header with EduVerse Branding */}
+      <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 border border-white/10 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="space-y-2 z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span>EduVerse State Administration Core</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            {t('రాష్ట్ర అడ్మినిస్ట్రేటివ్ ప్యానెల్ & AI కంట్రోల్ హబ్', 'State Administrative Panel & AI Control Hub')}
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            {t('రాష్ట్ర విద్యాశాఖ – AI అడ్మిన్ పోర్టల్', 'State School Education Admin Portal')}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300">
+          <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
             {t(
-              'పాఠశాలలు, ఉపాధ్యాయులు, విద్యార్థుల డేటా ఐసోలేషన్ మరియు తెలుగు ASR వాయిస్ మోడల్ అమరికల నిర్వహణ.',
-              'Complete system management: schools, teachers, telemetry, and Telugu neural voice engine calibration.'
+              'పాఠశాలలు, ఉపాధ్యాయులు, విద్యార్థుల వివరాలు మరియు తెలుగు AI మోడల్ అమరికల నిర్వహణ.',
+              'Statewide FLN telemetry, verified school rosters, AI calibration, and compliance audits.'
             )}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 z-10">
+          <a
+            href="/profile"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition"
+          >
+            <span>My Profile</span>
+          </a>
           <button
             onClick={() => window.print()}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition"
           >
             <Download className="w-4 h-4" />
-            <span>{t('సమగ్ర నివేదిక డౌన్‌లోడ్ (PDF)', 'Download Official Report')}</span>
+            <span>{t('సమగ్ర నివేదిక (PDF)', 'Export Audit Report')}</span>
           </button>
         </div>
       </div>

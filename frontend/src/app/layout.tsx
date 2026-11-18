@@ -5,9 +5,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
 export const metadata: Metadata = {
-  title: 'ప్రతి బిడ్డ చదవాలి – Every Child Reads | Telugu AI Reading Assessment',
+  title: 'EduVerse – AI Telugu Reading & Literacy Platform',
   description:
-    'Government school-focused AI SaaS platform that assesses children\'s Telugu reading abilities, identifies weaknesses, and provides personalized learning recommendations.',
+    'EduVerse: Next-generation government school-focused AI SaaS platform that assesses children\'s Telugu reading abilities, identifies weaknesses, and provides personalized learning recommendations.',
 };
 
 export default function RootLayout({

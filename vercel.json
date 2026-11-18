@@ -26,6 +26,12 @@
       }
     },
     {
+      "source": "/api/tutor/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    },
+    {
       "source": "/api/(.*)",
       "destination": {
         "service": "backend"

@@ -89,6 +89,19 @@ async function fetchGoogleChunkAudio(chunk: string): Promise<Uint8Array | null> 
 // In-memory LRU-style cache to prevent re-fetching and audio dropouts on repeated clicks
 const ttsCache = new Map<string, { buffer: ArrayBuffer; engine: string }>();
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const text = searchParams.get('text');
@@ -97,7 +110,7 @@ export async function GET(request: NextRequest) {
   const isSlow = searchParams.get('slow') === 'true';
 
   if (!text || !text.trim()) {
-    return new NextResponse('Missing text parameter', { status: 400 });
+    return new NextResponse('Missing text parameter', { status: 400, headers: CORS_HEADERS });
   }
 
   const cleanText = text.trim();
@@ -114,6 +127,7 @@ export async function GET(request: NextRequest) {
           'Content-Length': cached.buffer.byteLength.toString(),
           'Cache-Control': 'public, max-age=86400, s-maxage=86400',
           'X-Voice-Engine': `${cached.engine}-Cached`,
+          ...CORS_HEADERS,
         },
       });
     }
@@ -131,6 +145,7 @@ export async function GET(request: NextRequest) {
           'Content-Length': murfAudio.byteLength.toString(),
           'Cache-Control': 'public, max-age=86400, s-maxage=86400',
           'X-Voice-Engine': 'Murf-Falcon-Anisha',
+          ...CORS_HEADERS,
         },
       });
     }
@@ -146,7 +161,7 @@ export async function GET(request: NextRequest) {
 
     const backendRes = await fetch(targetUrl.toString(), {
       cache: 'no-store',
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(1500),
     });
 
     if (backendRes.ok) {
@@ -160,6 +175,7 @@ export async function GET(request: NextRequest) {
             'Content-Length': audioBuffer.byteLength.toString(),
             'Cache-Control': 'public, max-age=86400, s-maxage=86400',
             'X-Voice-Engine': `Edge-Neural-${persona}`,
+            ...CORS_HEADERS,
           },
         });
       }
@@ -180,7 +196,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (audioBuffers.length === 0) {
-    return new NextResponse('Failed to generate audio for text', { status: 502 });
+    return new NextResponse('Failed to generate audio for text', { status: 502, headers: CORS_HEADERS });
   }
 
   const totalLength = audioBuffers.reduce((sum, buf) => sum + buf.length, 0);
@@ -200,6 +216,7 @@ export async function GET(request: NextRequest) {
       'Content-Length': totalLength.toString(),
       'Cache-Control': 'public, max-age=86400, s-maxage=86400',
       'X-Voice-Engine': 'Google-Fallback',
+      ...CORS_HEADERS,
     },
   });
 }

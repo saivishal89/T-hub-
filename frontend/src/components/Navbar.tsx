@@ -26,9 +26,10 @@ import {
   Bot,
   FileCheck,
   CheckCircle,
-  UserCheck,
   School,
   Gamepad2,
+  HelpCircle,
+  User,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -49,33 +50,41 @@ export default function Navbar() {
   const [voiceDropdownOpen, setVoiceDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // If on login page, render minimal official portal header
+  // If on login page, render minimal official portal header with EduVerse branding
   if (pathname === '/login') {
     return (
-      <header className="bg-white border-b border-slate-200 py-3.5 px-4 sm:px-8 shadow-xs">
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 py-3.5 px-4 sm:px-8 shadow-xs sticky top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg font-telugu shadow">
-              చ
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 text-white flex items-center justify-center font-black text-xl shadow-md group-hover:scale-105 transition-transform duration-300">
+              E
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900 text-base">
-                  {t('ప్రతి బిడ్డ చదవాలి', 'Every Child Reads')}
+                <span className="font-extrabold text-slate-900 text-lg tracking-tight group-hover:text-blue-700 transition-colors">
+                  EduVerse
                 </span>
-                <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full">
-                  FLN Telugu AI
+                <span className="text-[10px] bg-blue-100 text-blue-900 font-extrabold px-2 py-0.5 rounded-full border border-blue-200">
+                  Telugu AI
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-slate-500 font-medium">
                 {t('పాఠశాల విద్యాశాఖ – అధికారిక పోర్టల్', 'School Education Department – Official Portal')}
               </p>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/support"
+              className="text-xs font-bold text-slate-600 hover:text-blue-600 flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-slate-50 transition"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>{t('సహాయం', 'Support')}</span>
+            </Link>
+
             <button
               onClick={() => setLanguage(language === 'te' ? 'en' : 'te')}
-              className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors"
+              className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Globe className="w-3.5 h-3.5 text-blue-600" />
               <span>{language === 'te' ? 'English' : 'తెలుగు'}</span>
@@ -94,48 +103,48 @@ export default function Navbar() {
     highlight?: boolean;
   }
 
-  // 1. ADMIN EXCLUSIVE NAVIGATION (No student or teacher features shown)
+  // 1. ADMIN EXCLUSIVE NAVIGATION - Clean, Simplified, Direct Labels
   const adminLinks: NavLinkItem[] = [
-    { href: '/admin', labelTe: 'రాష్ట్ర విశ్లేషణ', labelEn: 'Overview & Telemetry', icon: BarChart3 },
+    { href: '/admin', labelTe: 'విశ్లేషణ', labelEn: 'Overview', icon: BarChart3 },
     { href: '/admin?tab=schools', labelTe: 'పాఠశాలలు', labelEn: 'Schools', icon: Building2 },
     { href: '/admin?tab=teachers', labelTe: 'ఉపాధ్యాయులు', labelEn: 'Teachers', icon: Users },
-    { href: '/admin?tab=students', labelTe: 'విద్యార్థుల రికార్డులు', labelEn: 'Student Records', icon: Award },
-    { href: '/admin?tab=ai-config', labelTe: 'AI మోడల్ అమరికలు', labelEn: 'AI Calibration', icon: Sparkles },
-    { href: '/settings', labelTe: 'సిస్టమ్ సెట్టింగ్స్', labelEn: 'Settings', icon: Settings },
+    { href: '/admin?tab=students', labelTe: 'విద్యార్థులు', labelEn: 'Students', icon: Award },
+    { href: '/admin?tab=ai-config', labelTe: 'AI మోడల్', labelEn: 'AI Settings', icon: Sparkles },
+    { href: '/profile', labelTe: 'నా ప్రొఫైల్', labelEn: 'My Profile', icon: User },
   ];
 
-  // 2. TEACHER EXCLUSIVE NAVIGATION
+  // 2. TEACHER EXCLUSIVE NAVIGATION - Corrected labels (Conduct Reading Test fixed to Reading Studio)
   const teacherLinks: NavLinkItem[] = [
-    { href: '/teacher', labelTe: 'తరగతి డ్యాష్‌బోర్డ్', labelEn: 'Classroom Hub', icon: Users },
-    { href: '/reading-studio', labelTe: 'లైవ్ పఠన పరీక్ష', labelEn: 'Conduct Reading Test', icon: Mic, highlight: true },
-    { href: '/assessment-result', labelTe: 'ఉపాధ్యాయుల ధృవీకరణ', labelEn: 'Sign-off & Verify', icon: FileCheck },
-    { href: '/practice', labelTe: 'అక్షర సాధన కేటాయింపు', labelEn: 'Assign Practice', icon: Award },
-    { href: '/settings', labelTe: 'ప్రొఫైల్', labelEn: 'Profile', icon: Settings },
+    { href: '/teacher', labelTe: 'తరగతి గది', labelEn: 'Classroom', icon: Users },
+    { href: '/reading-studio', labelTe: 'పఠన పరీక్ష', labelEn: 'Reading Test', icon: Mic, highlight: true },
+    { href: '/assessment-result', labelTe: 'ధృవీకరణ', labelEn: 'Verify & Sign-off', icon: FileCheck },
+    { href: '/practice', labelTe: 'అక్షర సాధన', labelEn: 'Practice Hub', icon: Award },
+    { href: '/profile', labelTe: 'నా ప్రొఫైల్', labelEn: 'My Profile', icon: User },
   ];
 
-  // 3. STUDENT EXCLUSIVE NAVIGATION (Canonical 4-item sequence with professional Lucide icons)
+  // 3. STUDENT EXCLUSIVE NAVIGATION - Simplified, clear, child-friendly labels
   const studentLinks: NavLinkItem[] = [
-    { href: '/reading-studio', labelTe: 'కథల గది', labelEn: 'Story Room', icon: BookOpen },
-    { href: '/tutor', labelTe: 'AI గురువు', labelEn: 'AI Teacher', icon: Bot },
-    { href: '/practice', labelTe: 'అక్షర సాధన', labelEn: 'Character Practice', icon: Gamepad2 },
+    { href: '/tutor', labelTe: 'చిన్నీ (AI గురువు)', labelEn: 'Chinni 3D AI Tutor', icon: Bot, highlight: true },
+    { href: '/reading-studio', labelTe: 'కథల గది', labelEn: 'Stories', icon: BookOpen },
+    { href: '/practice', labelTe: 'అక్షర సాధన', labelEn: 'Practice', icon: Gamepad2 },
     { href: '/student-profile', labelTe: 'నా ప్రగతి', labelEn: 'My Progress', icon: BarChart3 },
+    { href: '/profile', labelTe: 'ప్రొఫైల్', labelEn: 'Profile', icon: User },
   ];
 
   // 4. PARENT EXCLUSIVE NAVIGATION
   const parentLinks: NavLinkItem[] = [
-    { href: '/parent', labelTe: 'బిడ్డ పఠన ప్రగతి', labelEn: 'Child Progress', icon: HeartHandshake },
-    { href: '/parent?tab=recordings', labelTe: 'వాయిస్ రికార్డింగ్స్', labelEn: 'Voice Recordings', icon: Mic },
-    { href: '/parent?tab=tips', labelTe: 'ఇంటి చిట్కాలు', labelEn: 'Home Learning Tips', icon: BookOpen },
-    { href: '/parent?tab=report', labelTe: 'నివేదిక డౌన్‌లోడ్', labelEn: 'Download Report', icon: FileCheck },
+    { href: '/parent', labelTe: 'బిడ్డ పురోగతి', labelEn: 'Child Progress', icon: HeartHandshake },
+    { href: '/parent?tab=recordings', labelTe: 'రికార్డింగ్స్', labelEn: 'Voice Recordings', icon: Mic },
+    { href: '/parent?tab=tips', labelTe: 'ఇంటి చిట్కాలు', labelEn: 'Home Tips', icon: BookOpen },
+    { href: '/profile', labelTe: 'నా ప్రొఫైల్', labelEn: 'My Profile', icon: User },
   ];
 
-  // 5. DEO EXCLUSIVE NAVIGATION (District Level Oversight)
+  // 5. DEO EXCLUSIVE NAVIGATION
   const deoLinks: NavLinkItem[] = [
-    { href: '/deo', labelTe: 'జిల్లా డ్యాష్‌బోర్డ్', labelEn: 'District Dashboard', icon: Building2 },
-    { href: '/deo?tab=mandals', labelTe: 'మండలాల పురోగతి', labelEn: 'Mandal Progress', icon: BarChart3 },
-    { href: '/deo?tab=schools', labelTe: 'పాఠశాలల పరిశీలన', labelEn: 'School Oversight', icon: School },
-    { href: '/notifications', labelTe: 'నోటిఫికేషన్లు', labelEn: 'Notifications', icon: Award },
-    { href: '/settings', labelTe: 'సెట్టింగ్స్', labelEn: 'Settings', icon: Settings },
+    { href: '/deo', labelTe: 'జిల్లా డ్యాష్‌బోర్డ్', labelEn: 'District Hub', icon: Building2 },
+    { href: '/deo?tab=mandals', labelTe: 'మండలాలు', labelEn: 'Mandals', icon: BarChart3 },
+    { href: '/deo?tab=schools', labelTe: 'పాఠశాలలు', labelEn: 'Schools', icon: School },
+    { href: '/profile', labelTe: 'నా ప్రొఫైల్', labelEn: 'My Profile', icon: User },
   ];
 
   // Strictly bind navigation to current authenticated role
@@ -167,7 +176,7 @@ export default function Navbar() {
     district_officer: {
       bannerBg: 'from-indigo-900 via-slate-900 to-blue-950',
       pillBg: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-      label: 'District Officer (DEO)',
+      label: 'DEO Portal',
       labelTe: 'జిల్లా విద్యాశాఖ అధికారి',
     },
     teacher: {
@@ -200,15 +209,15 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all duration-300">
       {/* Top Govt Bar */}
-      <div className={`bg-gradient-to-r ${activeRoleStyle.bannerBg} text-white text-xs px-4 py-1.5 flex justify-between items-center font-medium`}>
+      <div className={`bg-gradient-to-r ${activeRoleStyle.bannerBg} text-white text-xs px-4 py-1.5 flex justify-between items-center font-medium transition-all duration-500`}>
         <div className="flex items-center gap-2">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span className="truncate max-w-[280px] sm:max-w-none">
+          <span className="truncate max-w-[280px] sm:max-w-none text-[11px] sm:text-xs">
             {t(
-              'తెలంగాణ & ఆంధ్రప్రదేశ్ పాఠశాల విద్యాశాఖ – ప్రతి బిడ్డ చదవాలి (FLN / NIPUN Bharat)',
-              'School Education Dept – Every Child Reads Telugu Literacy Initiative'
+              'తెలంగాణ & ఏపీ విద్యాశాఖ – EduVerse AI పఠన వేదిక (FLN / NIPUN Bharat)',
+              'School Education Dept – EduVerse Telugu AI Literacy Initiative'
             )}
           </span>
           <span className="hidden md:inline-block text-white/40">|</span>
@@ -218,16 +227,25 @@ export default function Navbar() {
         </div>
 
         {/* Top Right Controls */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Support Link */}
+          <Link
+            href="/support"
+            className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">{t('సహాయం', 'Support')}</span>
+          </Link>
+
           {/* Voice Gender Switcher Dropdown */}
           <div className="relative">
             <button
               onClick={() => setVoiceDropdownOpen(!voiceDropdownOpen)}
-              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-white text-[11px] font-medium transition-colors"
-              title="Change Telugu AI Voice (Male / Female)"
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/15 hover:bg-white/25 text-white text-[11px] font-medium transition-colors cursor-pointer"
+              title="Change Telugu AI Voice"
             >
               <Volume2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>
+              <span className="hidden sm:inline">
                 {voiceGender === 'female'
                   ? '♀ లక్ష్మి టీచర్'
                   : voiceGender === 'male'
@@ -251,7 +269,7 @@ export default function Navbar() {
                       setVoiceGender(v.key);
                       setVoiceDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-slate-50 transition-colors ${
+                    className={`w-full text-left px-3 py-2 text-xs flex flex-col hover:bg-slate-50 transition-colors cursor-pointer ${
                       voiceGender === v.key ? 'bg-blue-50/80 font-bold text-blue-900' : ''
                     }`}
                   >
@@ -269,7 +287,7 @@ export default function Navbar() {
           {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'te' ? 'en' : 'te')}
-            className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+            className="flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
           >
             <Globe className="w-3 h-3 text-emerald-300" />
             <span>{language === 'te' ? 'English' : 'తెలుగు'}</span>
@@ -280,28 +298,28 @@ export default function Navbar() {
       {/* Main Role-Isolated Nav */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Brand Logo & Current Role Identity */}
+          {/* Brand Logo & Current Role Identity - EduVerse Prominent Branding */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-800 text-white flex items-center justify-center font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
-              <span className="font-telugu">చ</span>
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-sky-500 text-white flex items-center justify-center font-black text-xl shadow-md group-hover:scale-105 group-hover:shadow-blue-500/25 transition-all duration-300">
+              E
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">
-                  {t('ప్రతి బిడ్డ చదవాలి', 'Every Child Reads')}
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-slate-900 text-lg sm:text-xl tracking-tight group-hover:text-blue-700 transition-colors">
+                  EduVerse
                 </span>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${activeRoleStyle.pillBg}`}>
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${activeRoleStyle.pillBg}`}>
                   {t(activeRoleStyle.labelTe, activeRoleStyle.label)}
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                {currentUser?.school || t('పాఠశాల పఠన నైపుణ్యాల నిర్ధారణ వేదిక', 'Telugu AI Literacy Platform')}
+                {currentUser?.school || t('తెలుగు పఠన నైపుణ్యాల నిర్ధారణ వేదిక', 'Telugu FLN AI Literacy Platform')}
               </p>
             </div>
           </Link>
 
-          {/* Desktop Nav Items (Strictly Filtered by Current Role!) */}
-          <nav className="hidden lg:flex items-center gap-1">
+          {/* Desktop Nav Items with Smooth Hover Animations and Simplified Labels */}
+          <nav className="hidden lg:flex items-center gap-1.5">
             {currentNavLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href.split('?')[0]));
@@ -309,41 +327,49 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 shadow-xs border border-blue-200/60 font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  } ${link.highlight ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100' : ''}`}
+                      ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20 translate-y-[-1px]'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:translate-y-[-1px]'
+                  } ${
+                    link.highlight && !isActive
+                      ? 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
+                      : ''
+                  }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                   <span>{t(link.labelTe, link.labelEn)}</span>
                 </Link>
               );
             })}
           </nav>
 
-          {/* Authenticated User Profile & Secure Logout (NO Role-Switching Dropdown!) */}
+          {/* Authenticated User Profile & Secure Logout */}
           <div className="flex items-center gap-3">
-            {/* Authenticated User Identity Pill */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[11px]">
+            {/* Authenticated User Identity Pill -> Links directly to /profile */}
+            <Link
+              href="/profile"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs transition-colors cursor-pointer group"
+              title="View My Profile"
+            >
+              <div className="w-6 h-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-[11px] group-hover:scale-105 transition-transform">
                 {currentUser?.name?.charAt(0) || 'U'}
               </div>
               <div className="text-left">
-                <div className="font-bold text-slate-900 leading-tight truncate max-w-[130px]">
-                  {currentUser?.nameTelugu || currentUser?.name}
+                <div className="font-bold text-slate-900 leading-tight truncate max-w-[120px] group-hover:text-blue-600 transition-colors">
+                  {currentUser?.nameTelugu || currentUser?.name || 'User'}
                 </div>
                 <div className="text-[10px] text-slate-400 leading-tight">
-                  {currentUser?.roleLabelTelugu || currentUser?.roleLabel}
+                  {currentUser?.roleLabelTelugu || currentUser?.roleLabel || 'View Profile'}
                 </div>
               </div>
-            </div>
+            </Link>
 
             {/* Secure Logout Button */}
             <button
               type="button"
               onClick={logout}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 text-slate-700 hover:text-red-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-red-50 hover:border-red-200 text-slate-700 hover:text-red-700 text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
               title="Secure Logout"
             >
               <LogOut className="w-3.5 h-3.5 text-red-500" />
@@ -353,7 +379,7 @@ export default function Navbar() {
             {/* Mobile Menu Trigger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -361,13 +387,20 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Drawer (Strictly filtered by role) */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-4 space-y-1">
-          <div className="p-2 mb-2 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
-            <span className="font-bold">{currentUser?.name}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-semibold">{role}</span>
-          </div>
+        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-4 space-y-1 animate-in slide-in-from-top-2 duration-200">
+          <Link
+            href="/profile"
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2.5 mb-2 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center justify-between"
+          >
+            <div>
+              <span className="font-bold block text-slate-900">{currentUser?.name}</span>
+              <span className="text-[11px] text-slate-400">View My Profile</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold uppercase">{role}</span>
+          </Link>
           {currentNavLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
@@ -376,15 +409,23 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer ${
-                  isActive ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100'
+                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  isActive ? 'bg-blue-600 text-white' : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                <Icon className="w-4 h-4 text-slate-500" />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                 <span>{t(link.labelTe, link.labelEn)}</span>
               </Link>
             );
           })}
+          <Link
+            href="/support"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <HelpCircle className="w-4 h-4 text-amber-500" />
+            <span>Contact Support</span>
+          </Link>
         </div>
       )}
     </header>

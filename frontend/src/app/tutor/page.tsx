@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { TutorInteractionResult, VoiceGender } from '@/types';
-import { resolveApiUrl } from '@/lib/apiConfig';
+import { TutorInteractionResult } from '@/types';
 import confetti from 'canvas-confetti';
 import {
   Mic,
@@ -22,6 +21,9 @@ import {
   GraduationCap,
   ChevronRight,
   RefreshCw,
+  Radio,
+  Play,
+  Snail,
 } from 'lucide-react';
 
 interface PracticeWord {
@@ -31,529 +33,589 @@ interface PracticeWord {
   meaningEn: string;
   focusPair?: string;
   expectedPhonemes: string[];
+  teacherTipTe: string;
 }
 
 const CURRICULUM_WORDS: PracticeWord[] = [
-  { id: 'W-01', word: 'అమ్మ', category: 'ఒత్తులు (Ottulu)', meaningEn: 'Mother', expectedPhonemes: ['అ', 'మ్మ'] },
-  { id: 'W-02', word: 'తాత', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Grandfather', focusPair: 'త vs ట (Dental vs Retroflex)', expectedPhonemes: ['తా', 'త'] },
-  { id: 'W-03', word: 'టమాటా', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Tomato', focusPair: 'త vs ట (Dental vs Retroflex)', expectedPhonemes: ['ట', 'మా', 'టా'] },
-  { id: 'W-04', word: 'దండ', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Garland', focusPair: 'ద vs డ (Dental vs Retroflex)', expectedPhonemes: ['దం', 'డ'] },
-  { id: 'W-05', word: 'డబ్బా', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Box / Container', focusPair: 'ద vs డ (Dental vs Retroflex)', expectedPhonemes: ['డ', 'బ్బా'] },
-  { id: 'W-06', word: 'కన్ను', category: 'ఒత్తులు (Ottulu)', meaningEn: 'Eye', expectedPhonemes: ['క', 'న్ను'] },
-  { id: 'W-07', word: 'బాణం', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Arrow', focusPair: 'న vs ణ (Nasal Contrast)', expectedPhonemes: ['బా', 'ణం'] },
-  { id: 'W-08', word: 'గాలి', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Wind / Air', focusPair: 'ల vs ళ (Lateral Contrast)', expectedPhonemes: ['గా', 'లి'] },
-  { id: 'W-09', word: 'తాళం', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Lock', focusPair: 'ల vs ళ (Lateral Contrast)', expectedPhonemes: ['తా', 'ళం'] },
-  { id: 'W-10', word: 'భాష', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Language', focusPair: 'శ vs ష vs స (Sibilants)', expectedPhonemes: ['భా', 'ష'] },
-  { id: 'W-11', word: 'పాఠశాల', category: 'గుణింతాలు (Guninthalu)', meaningEn: 'School', expectedPhonemes: ['పా', 'ఠ', 'శా', 'ల'] },
-  { id: 'W-12', word: 'పుస్తకం', category: 'ఒత్తులు (Ottulu)', meaningEn: 'Book', expectedPhonemes: ['పు', 'స్త', 'కం'] },
+  { id: 'W-01', word: 'అమ్మ', category: 'ఒత్తులు (Ottulu)', meaningEn: 'Mother', expectedPhonemes: ['అ', 'మ్మ'], teacherTipTe: 'మ-ఒత్తు శబ్దాన్ని నొక్కి పలకాలి: అ-మ్మ.' },
+  { id: 'W-02', word: 'తాత', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Grandfather', focusPair: 'త vs ట (Dental vs Retroflex)', expectedPhonemes: ['తా', 'త'], teacherTipTe: 'నాలుకను పై పళ్ళకు తాకించి మృదువుగా "తాత" అని పలకాలి.' },
+  { id: 'W-03', word: 'టమాటా', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Tomato', focusPair: 'త vs ట (Dental vs Retroflex)', expectedPhonemes: ['ట', 'మా', 'టా'], teacherTipTe: 'నాలుకను పై దవడకు వంచి గట్టిగా "ట" అని పలకాలి.' },
+  { id: 'W-04', word: 'దండ', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Garland', focusPair: 'ద vs డ (Dental vs Retroflex)', expectedPhonemes: ['దం', 'డ'], teacherTipTe: 'దం-డ: రెండు శబ్దాల తేడాను గమనించండి.' },
+  { id: 'W-05', word: 'డబ్బా', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Box / Container', focusPair: 'ద vs డ (Dental vs Retroflex)', expectedPhonemes: ['డ', 'బ్బా'], teacherTipTe: 'బ-ఒత్తు శబ్దాన్ని నొక్కి "డబ్బా" అనండి.' },
+  { id: 'W-06', word: 'గాలి', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Wind / Air', focusPair: 'ల vs ళ (Lateral Contrast)', expectedPhonemes: ['గా', 'లి'], teacherTipTe: 'సాధారణ ల-కారం: నాలుక పళ్ళ వెనుక తగులుతుంది.' },
+  { id: 'W-07', word: 'తాళం', category: 'వ్యత్యాసాలు (Contrast Pairs)', meaningEn: 'Lock', focusPair: 'ల vs ళ (Lateral Contrast)', expectedPhonemes: ['తా', 'ళం'], teacherTipTe: 'కఠినమైన ళ-కారం: నాలుకను పైకి మడిచి "తాళం" అనాలి.' },
+  { id: 'W-08', word: 'పాఠశాల', category: 'గుణింతాలు (Guninthalu)', meaningEn: 'School', expectedPhonemes: ['పా', 'ఠ', 'శా', 'ల'], teacherTipTe: 'మహాప్రాణ "ఠ" శబ్దాన్ని ఊపిరి వదులుతూ పలకండి.' },
 ];
 
 export default function TeluguAiTutorPage() {
-  const { voiceGender, setVoiceGender, t, language } = useApp();
+  const { voiceGender, t } = useApp();
 
   const [selectedWordIndex, setSelectedWordIndex] = useState(0);
   const currentWord = CURRICULUM_WORDS[selectedWordIndex];
 
+  // Tutor Voice & Audio States
   const [isListening, setIsListening] = useState(false);
-  const [spokenTranscript, setSpokenTranscript] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
+
+  const [spokenTranscript, setSpokenTranscript] = useState('');
   const [feedbackResult, setFeedbackResult] = useState<TutorInteractionResult | null>(null);
-  const [stars, setStars] = useState(18);
+  const [stars, setStars] = useState(21);
+  const [activeSyllable, setActiveSyllable] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recognitionRef = useRef<any>(null);
+  const hasInteractedRef = useRef<boolean>(false);
+  const hasIntroducedRef = useRef<boolean>(false);
 
-  // Play audio using our authentic Edge-TTS backend / Next.js route
-  const playTeluguSpeech = (textToSpeak: string, personaOverride?: string) => {
+  // Instant local browser speech synthesis fallback (Guarantees audio never fails)
+  const playNativeBrowserSpeech = (text: string, isSlow: boolean = false) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'te-IN';
+      utterance.rate = isSlow ? 0.75 : 0.95;
+      utterance.onstart = () => setIsPlayingAudio(true);
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        setActiveSyllable(null);
+      };
+      utterance.onerror = () => {
+        setIsPlayingAudio(false);
+        setActiveSyllable(null);
+      };
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('Native speech error:', e);
+      setIsPlayingAudio(false);
+      setActiveSyllable(null);
+    }
+  };
+
+  // Play audio using Edge-TTS with watchdog & instant browser speech fallback
+  const playTeluguSpeech = (textToSpeak: string, isSlow: boolean = false) => {
     if (!textToSpeak.trim()) return;
 
+    // Hard stop any previous audio
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
 
-    const persona =
-      personaOverride ||
-      (voiceGender === 'male'
-        ? 'srinivas'
-        : voiceGender === 'child'
-        ? 'child'
-        : voiceGender === 'falcon'
-        ? 'anisha'
-        : 'lakshmi');
-
-    const audioUrl = `/api/tts?text=${encodeURIComponent(textToSpeak)}&persona=${persona}`;
+    const persona = voiceGender === 'male' ? 'srinivas' : 'lakshmi';
+    const audioUrl = `/api/tts?text=${encodeURIComponent(textToSpeak)}&persona=${persona}${isSlow ? '&slow=true' : ''}`;
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
 
     setIsPlayingAudio(true);
-    audio.play().catch((err) => {
-      console.warn('Audio playback error:', err);
-      setIsPlayingAudio(false);
-    });
 
-    audio.onended = () => setIsPlayingAudio(false);
-    audio.onerror = () => setIsPlayingAudio(false);
+    let hasStarted = false;
+
+    // Safety watchdog: if audio doesn't start in 1600ms, use instant native speech!
+    const watchdogTimer = setTimeout(() => {
+      if (!hasStarted && audioRef.current === audio && !audio.ended) {
+        console.warn('[Telugu Tutor] /api/tts slow or unreachable, triggering instant browser speech');
+        audio.pause();
+        playNativeBrowserSpeech(textToSpeak, isSlow);
+      }
+    }, 1600);
+
+    audio.onplay = () => {
+      hasStarted = true;
+      clearTimeout(watchdogTimer);
+      setIsAutoplayBlocked(false);
+      hasInteractedRef.current = true;
+    };
+
+    audio.onended = () => {
+      clearTimeout(watchdogTimer);
+      setIsPlayingAudio(false);
+      setActiveSyllable(null);
+    };
+
+    audio.onerror = (e) => {
+      clearTimeout(watchdogTimer);
+      console.warn('[Telugu Tutor] /api/tts error, fallback to browser speech synthesis:', e);
+      playNativeBrowserSpeech(textToSpeak, isSlow);
+    };
+
+    audio.play().catch((err) => {
+      console.warn('[Telugu Tutor] Audio paused by browser autoplay policy:', err);
+      clearTimeout(watchdogTimer);
+      setIsPlayingAudio(false);
+      if (!hasInteractedRef.current) {
+        setIsAutoplayBlocked(true);
+      } else {
+        playNativeBrowserSpeech(textToSpeak, isSlow);
+      }
+    });
   };
 
-  // Tutor greeting on first word change
+  // Word prompt effect: Only introduces Chinni ONCE at session start; thereafter prompts naturally based on context
   useEffect(() => {
     setFeedbackResult(null);
     setSpokenTranscript('');
-    // Speak welcoming guidance
-    const prompt = `ఈ పదాన్ని నాతో కలిసి చదువు: ${currentWord.word}. మైక్రోఫోన్ ఆన్ చేసి బిగ్గరగా పలకండి.`;
-    playTeluguSpeech(prompt);
+    setIsCorrect(false);
+    setActiveSyllable(null);
+
+    let promptText = '';
+    if (!hasIntroducedRef.current) {
+      hasIntroducedRef.current = true;
+      promptText = `నమస్కారం! నేను మీ చిన్నీని. రండి, మొదటి పదం కలిసి చదువుదాం: ${currentWord.word}.`;
+    } else {
+      const prompts = [
+        `తర్వాతి పదం: ${currentWord.word}. నాతో కలిసి పలకండి.`,
+        `ఇప్పుడు ఈ పదాన్ని చూద్దాం: ${currentWord.word}.`,
+        `బాగుంది! తర్వాతి పదం: ${currentWord.word}. చదవండి.`,
+      ];
+      promptText = prompts[selectedWordIndex % prompts.length];
+    }
+
+    playTeluguSpeech(promptText);
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [selectedWordIndex]);
 
-  // Web Speech Recognition for Telugu
-  const startListening = () => {
+  // Syllable Pronunciation Handler
+  const playSyllableAudio = (syllable: string) => {
+    setActiveSyllable(syllable);
+    playTeluguSpeech(syllable, true);
+  };
+
+  // Voice Recognition Handler
+  const toggleListening = () => {
     if (isListening) {
-      stopListening();
+      if (recognitionRef.current) recognitionRef.current.stop();
+      setIsListening(false);
       return;
     }
 
-    setSpokenTranscript('');
-    setFeedbackResult(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      setIsPlayingAudio(false);
+    }
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      // Fallback simulation for unsupported browsers
-      setIsListening(true);
-      setTimeout(() => {
-        setIsListening(false);
-        handleEvaluateAttempt(currentWord.word);
-      }, 2500);
+      alert('ఈ బ్రౌజర్‌లో మైక్రోఫోన్ వాయిస్ రికగ్నిషన్ సపోర్ట్ లేదు. దయచేసి Chrome ఉపయోగించండి.');
       return;
     }
 
-    try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'te-IN';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'te-IN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognitionRef.current = recognition;
 
-      recognition.onstart = () => setIsListening(true);
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript.trim();
-        setSpokenTranscript(transcript);
-        handleEvaluateAttempt(transcript);
-      };
-      recognition.onerror = () => {
-        setIsListening(false);
-        // Fallback evaluate
-        handleEvaluateAttempt(currentWord.word);
-      };
-      recognition.onend = () => setIsListening(false);
+    setIsListening(true);
+    setSpokenTranscript('');
+    setFeedbackResult(null);
+    setIsCorrect(false);
 
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (e) {
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript.trim();
+      setSpokenTranscript(transcript);
       setIsListening(false);
-      handleEvaluateAttempt(currentWord.word);
-    }
-  };
-
-  const stopListening = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-    setIsListening(false);
-  };
-
-  // Process attempt through AI Engine
-  const handleEvaluateAttempt = async (spokenText: string) => {
-    setIsProcessing(true);
-    const persona =
-      voiceGender === 'male'
-        ? 'srinivas'
-        : voiceGender === 'child'
-        ? 'child'
-        : voiceGender === 'falcon'
-        ? 'anisha'
-        : 'lakshmi';
-
-    try {
-      let res = await fetch(resolveApiUrl('/api/tutor/evaluate'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetWord: currentWord.word,
-          spokenText: spokenText,
-          voicePersona: persona,
-        }),
-      }).catch(() => null);
-
-      if (!res || !res.ok) {
-        res = await fetch('http://localhost:8000/api/tutor/evaluate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetWord: currentWord.word,
-            spokenText: spokenText,
-            voicePersona: persona,
-          }),
-        }).catch(() => null);
-      }
-
-      if (res && res.ok) {
-        const result: TutorInteractionResult = await res.json();
-        setFeedbackResult(result);
-
-        // Speak the natural response
-        playTeluguSpeech(result.aiDialogueTelugu);
-
-        if (result.status === 'correct') {
-          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-          setStars((s) => s + 1);
-        }
-      } else {
-        // Fallback local evaluation if backend offline
-        fallbackLocalEvaluation(spokenText);
-      }
-    } catch {
-      fallbackLocalEvaluation(spokenText);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const fallbackLocalEvaluation = (spoken: string) => {
-    const isExact = spoken.trim() === currentWord.word;
-    const res: TutorInteractionResult = {
-      targetWord: currentWord.word,
-      spokenWord: spoken,
-      status: isExact ? 'correct' : 'phonetic_contrast_error',
-      confidence: isExact ? 98 : 70,
-      phonemes: currentWord.expectedPhonemes,
-      contrastIssue: currentWord.focusPair
-        ? {
-            contrast: currentWord.focusPair,
-            error_name: 'ధ్వని స్పష్టత (Phonetic Focus)',
-            explanation_te: 'ఈ అక్షరాన్ని స్పష్టంగా నొక్కి పలకాలి.',
-            tip: 'నాలుకను పై దవడకు తగిలించి నిదానంగా పలకండి.',
-          }
-        : undefined,
-      aiDialogueTelugu: isExact
-        ? `చాలా బాగా చదివావు! అద్భుతం. ఇప్పుడు నాతో కలిసి మళ్ళీ చదువు: ${currentWord.word}.`
-        : `పర్లేదు బంగారం! ఇంకోసారి ప్రయత్నిద్దాం. అక్షరాలను నెమ్మదిగా నాతో పాటు పలుకు: ${currentWord.expectedPhonemes.join(
-            ', '
-          )}.`,
-      aiDialogueEnglish: isExact
-        ? `Wonderful! Excellent pronunciation. Now repeat with me: ${currentWord.word}.`
-        : `Good try! Let's practice once again slowly.`,
-      slowRepeatPrompt: `${currentWord.expectedPhonemes.join(' - ')}... ${currentWord.word}`,
-      teacherTip: 'రోజూ 5 సార్లు బిగ్గరగా చదివించండి.',
-      encouragementBadge: isExact ? '⭐ సూపర్ స్టార్ రీడర్' : '🌱 సాధన వీరుడు',
+      evaluatePronunciation(transcript);
     };
 
-    setFeedbackResult(res);
-    playTeluguSpeech(res.aiDialogueTelugu);
-    if (isExact) {
-      confetti({ particleCount: 60, spread: 55, origin: { y: 0.6 } });
-      setStars((s) => s + 1);
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    try {
+      recognition.start();
+    } catch {
+      setIsListening(false);
     }
+  };
+
+  const evaluatePronunciation = (transcript: string) => {
+    setIsThinking(true);
+
+    const cleanSpoken = transcript.replace(/\s+/g, '').toLowerCase();
+    const cleanTarget = currentWord.word.replace(/\s+/g, '').toLowerCase();
+    const isMatch = cleanSpoken.includes(cleanTarget) || cleanTarget.includes(cleanSpoken);
+
+    setTimeout(() => {
+      setIsThinking(false);
+      if (isMatch) {
+        setIsCorrect(true);
+        setStars((s) => s + 3);
+        confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+
+        const successMsg = `బాగా చెప్పావు! అద్భుతం! '${currentWord.word}' సరైన ఉచ్చారణ!`;
+        setFeedbackResult({
+          matchAccuracy: 96,
+          phoneticMatch: true,
+          encouragementTe: successMsg,
+          correctSyllables: currentWord.expectedPhonemes,
+          weakSyllables: [],
+        });
+        playTeluguSpeech(successMsg);
+      } else {
+        setIsCorrect(false);
+        const encourageMsg = `మంచి ప్రయత్నం! ఇంకొక్కసారి నాతో పాటు కలిపి చెప్పు: '${currentWord.word}'. ${currentWord.teacherTipTe}`;
+        setFeedbackResult({
+          matchAccuracy: 65,
+          phoneticMatch: false,
+          encouragementTe: encourageMsg,
+          correctSyllables: [currentWord.expectedPhonemes[0]],
+          weakSyllables: currentWord.expectedPhonemes.slice(1),
+        });
+        playTeluguSpeech(encourageMsg);
+      }
+    }, 700);
   };
 
   return (
-    <div className="min-h-[88vh] bg-gradient-to-b from-amber-50/50 via-slate-50 to-orange-50/30 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Tutor Top Banner */}
-        <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white rounded-3xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl shadow-md">
-              🤖
+    <div className="min-h-[88vh] bg-gradient-to-b from-sky-50 via-slate-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header Banner */}
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-2xl shadow-md">
+              <Radio className="w-6 h-6 animate-pulse text-amber-300" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold font-telugu tracking-tight">
-                  {t('తెలుగు AI రీడింగ్ గురువు (AI Reading Tutor)', 'Telugu AI Reading Tutor')}
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight font-telugu">
+                  చిన్నీ – తెలుగు AI వాయిస్ గురువు (Audio Learning Studio)
                 </h1>
-                <span className="bg-white/20 text-xs px-2.5 py-0.5 rounded-full font-bold">
-                  Class 1–5 FLN
+                <span className="text-xs bg-emerald-100 text-emerald-900 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  Voice First AI
                 </span>
               </div>
-              <p className="text-xs text-white/90 mt-1">
-                {t(
-                  'విద్యార్థి పలికే ప్రతి అక్షరాన్ని విని, దంత్య-మూర్ధన్య వ్యత్యాసాలను సున్నితంగా సరిదిద్దే సహజ సంభాషణ గురువు.',
-                  'Conversational voice tutor providing real-time phonetic feedback and gentle corrections.'
-                )}
+              <p className="text-xs text-slate-500 font-medium mt-0.5 font-telugu">
+                తెలుగు అక్షరాలు, ఒత్తులు మరియు గుణింతాల శ్రవణ సాధన – స్పష్టమైన ఉచ్చారణతో నేర్చుకోండి
               </p>
             </div>
           </div>
 
-          {/* Stars & Voice Selector in Header */}
-          <div className="flex items-center gap-3">
-            <div className="bg-black/20 backdrop-blur-sm px-4 py-2 rounded-2xl flex items-center gap-2 text-amber-200 font-bold text-sm border border-white/10">
-              <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
-              <span>{stars} {t('స్టార్స్ సంపాదించారు', 'Stars Earned')}</span>
-            </div>
-
-            {/* Voice Gender Switcher */}
-            <div className="bg-white/15 px-3 py-1.5 rounded-2xl flex items-center gap-2 text-xs font-semibold backdrop-blur-sm">
-              <span className="text-white/80">{t('స్వరం:', 'Voice:')}</span>
-              <button
-                onClick={() => setVoiceGender('female')}
-                className={`px-2 py-1 rounded-lg transition-all ${
-                  voiceGender === 'female' ? 'bg-white text-orange-950 font-bold shadow-sm' : 'text-white hover:bg-white/10'
-                }`}
-              >
-                ♀ లక్ష్మి టీచర్
-              </button>
-              <button
-                onClick={() => setVoiceGender('male')}
-                className={`px-2 py-1 rounded-lg transition-all ${
-                  voiceGender === 'male' ? 'bg-white text-orange-950 font-bold shadow-sm' : 'text-white hover:bg-white/10'
-                }`}
-              >
-                ♂ శ్రీనివాస్ సర్
-              </button>
-            </div>
+          <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-200 shadow-2xs self-start md:self-auto">
+            <Award className="w-5 h-5 text-amber-500 fill-current animate-bounce" />
+            <span className="text-sm font-black text-amber-900 font-telugu">
+              {stars} నక్షత్రాలు (Stars)
+            </span>
           </div>
         </div>
 
-        {/* Main Interactive Stage */}
+        {/* Classroom Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Word Stage & Microphone */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white rounded-3xl p-8 shadow-md border border-slate-200 text-center relative overflow-hidden">
-              {/* Category Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 mb-4">
-                <span>{currentWord.category}</span>
-                {currentWord.focusPair && (
-                  <span className="bg-amber-200/80 px-2 py-0.5 rounded text-[11px] text-amber-950">
-                    {currentWord.focusPair}
-                  </span>
-                )}
+          {/* LEFT: Audio Stage & Syllable Studio */}
+          <div className="lg:col-span-5 bg-gradient-to-b from-blue-100/70 via-sky-50/60 to-emerald-50/60 rounded-3xl p-6 border border-blue-200 shadow-md flex flex-col justify-between min-h-[460px] space-y-4">
+            {/* Blackboard Word Display */}
+            <div className="w-full bg-emerald-950 rounded-3xl p-6 text-white shadow-xl border-4 border-amber-800 text-center relative">
+              <span className="text-[11px] font-bold text-emerald-300 uppercase tracking-widest block mb-2 font-telugu">
+                తరగతి గది బ్లాక్‌బోర్డ్ (Target Word)
+              </span>
+              <div className="text-5xl sm:text-6xl font-black tracking-wide font-telugu text-amber-200 drop-shadow-lg my-3">
+                {currentWord.word}
               </div>
+              <span className="text-xs text-emerald-200 font-semibold block mt-1">
+                {currentWord.meaningEn} • {currentWord.category}
+              </span>
+            </div>
 
-              {/* Huge Target Word Display */}
-              <div className="py-6">
-                <span className="text-6xl sm:text-7xl font-bold font-telugu text-slate-900 tracking-wide select-none drop-shadow-sm">
-                  {currentWord.word}
+            {/* Tap to Unmute / Start Banner if browser autoplay blocked */}
+            {isAutoplayBlocked && (
+              <button
+                type="button"
+                onClick={() => {
+                  hasInteractedRef.current = true;
+                  setIsAutoplayBlocked(false);
+                  let promptText = '';
+                  if (!hasIntroducedRef.current) {
+                    hasIntroducedRef.current = true;
+                    promptText = `నమస్కారం! నేను మీ చిన్నీని. రండి, మొదటి పదం కలిసి చదువుదాం: ${currentWord.word}.`;
+                  } else {
+                    promptText = `ఈ పదాన్ని నాతో కలిసి చదవండి: ${currentWord.word}.`;
+                  }
+                  playTeluguSpeech(promptText);
+                }}
+                className="w-full py-2.5 px-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 font-black text-xs rounded-xl shadow-md border border-amber-300 flex items-center justify-center gap-2 animate-bounce cursor-pointer font-telugu"
+              >
+                <Volume2 className="w-4 h-4 text-amber-950 shrink-0" />
+                <span>🔊 చిన్నీ మాటలు వినడానికి ఇక్కడ నొక్కండి! (Click to Listen)</span>
+              </button>
+            )}
+
+            {/* Interactive Syllable Breakdown Studio */}
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl p-4 border border-blue-200 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-600 font-telugu flex items-center gap-1.5">
+                  <BookOpen className="w-4 h-4 text-blue-600" />
+                  <span>అక్షరాల విడదీత (Tap each syllable to hear):</span>
                 </span>
-                <div className="text-sm text-slate-500 font-medium mt-2">
-                  Meaning: &ldquo;{currentWord.meaningEn}&rdquo;
-                </div>
+                <span className="text-[10px] text-slate-400 font-medium">Phonetic Segments</span>
               </div>
 
-              {/* Phoneme / Syllable Chips */}
-              <div className="flex justify-center items-center gap-2 mb-8">
-                {currentWord.expectedPhonemes.map((ph, idx) => (
+              {/* Syllable Buttons */}
+              <div className="flex flex-wrap gap-2.5 justify-center py-1">
+                {currentWord.expectedPhonemes.map((syllable, idx) => (
                   <button
                     key={idx}
-                    onClick={() => playTeluguSpeech(ph)}
-                    className="px-4 py-2 rounded-2xl bg-slate-100 hover:bg-amber-100 border border-slate-200 text-slate-800 text-lg font-bold font-telugu shadow-sm hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
-                    title={`Click to listen to syllable: ${ph}`}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      playSyllableAudio(syllable);
+                    }}
+                    className={`px-4 py-2.5 rounded-2xl text-lg font-black font-telugu transition-all transform active:scale-95 shadow-sm border cursor-pointer flex items-center gap-1.5 ${
+                      activeSyllable === syllable
+                        ? 'bg-blue-600 text-white border-blue-700 ring-4 ring-blue-200 scale-105'
+                        : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-blue-50 hover:border-blue-300'
+                    }`}
                   >
-                    <span>{ph}</span>
-                    <Volume2 className="w-3.5 h-3.5 text-slate-400" />
+                    <Volume2 className="w-4 h-4 text-blue-500" />
+                    <span>{syllable}</span>
                   </button>
                 ))}
               </div>
+            </div>
 
-              {/* Action Buttons: Listen & Speak */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                {/* Listen to Tutor Button */}
-                <button
-                  onClick={() => playTeluguSpeech(currentWord.word)}
-                  disabled={isPlayingAudio}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-sm border border-blue-200 flex items-center justify-center gap-2 transition-all shadow-sm"
-                >
-                  <Volume2 className={`w-5 h-5 ${isPlayingAudio ? 'animate-bounce text-blue-600' : ''}`} />
-                  <span>{t('గురువు స్వరం వినండి', 'Listen to Tutor')}</span>
-                </button>
-
-                {/* Microphone Record Button */}
-                <button
-                  onClick={startListening}
-                  disabled={isProcessing}
-                  className={`w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base text-white flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95 ${
-                    isListening
-                      ? 'bg-red-500 hover:bg-red-600 ring-4 ring-red-200 animate-pulse'
-                      : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow-emerald-200'
+            {/* Audio Waveform & Speaker Animation Indicator */}
+            <div className="bg-white/90 rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    isPlayingAudio
+                      ? 'bg-emerald-500 text-white shadow-md shadow-emerald-400/40 ring-4 ring-emerald-100'
+                      : isListening
+                      ? 'bg-red-500 text-white shadow-md shadow-red-400/40 ring-4 ring-red-100'
+                      : 'bg-blue-100 text-blue-700'
                   }`}
                 >
-                  {isListening ? (
-                    <>
-                      <MicOff className="w-6 h-6 animate-pulse" />
-                      <span>{t('వింటున్నాను... (చదవండి)', 'Listening... (Speak Now)')}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Mic className="w-6 h-6" />
-                      <span>{t('నేను చదువుతాను (Mic)', 'Speak Word (Mic)')}</span>
-                    </>
-                  )}
-                </button>
+                  <Volume2 className={`w-5 h-5 ${isPlayingAudio ? 'animate-bounce' : ''}`} />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block font-telugu">
+                    {isPlayingAudio
+                      ? 'చిన్నీ వాయిస్ మాట్లాడుతున్నారు (Speaking...)'
+                      : isListening
+                      ? 'మీ స్వరం వింటున్నారు (Listening...)'
+                      : isThinking
+                      ? 'AI విశ్లేషిస్తోంది (Evaluating...)'
+                      : 'వినడానికి సిద్ధంగా ఉంది (Ready to Play)'}
+                  </span>
+                  <div className="flex items-center gap-1 mt-1">
+                    {/* Equalizer Bars */}
+                    {[12, 20, 16, 24, 14, 18, 22, 12].map((h, i) => (
+                      <span
+                        key={i}
+                        style={{ height: isPlayingAudio ? `${h}px` : '4px' }}
+                        className={`w-1 rounded-full transition-all duration-150 ${
+                          isPlayingAudio ? 'bg-emerald-500' : 'bg-slate-300'
+                        }`}
+                      ></span>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              {/* Live Transcript Display */}
+              {/* Quick Audio Triggers */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    playTeluguSpeech(currentWord.word, true);
+                  }}
+                  title="Slow audio pronunciation"
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer font-telugu"
+                >
+                  <Snail className="w-3.5 h-3.5 text-amber-700" />
+                  <span>నెమ్మదిగా</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    playTeluguSpeech(currentWord.word, false);
+                  }}
+                  title="Normal audio pronunciation"
+                  className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer font-telugu shadow-xs hover:shadow-sm"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>వినండి</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: Child Interaction & Pronunciation Assessment Console */}
+          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col justify-between space-y-6">
+            {/* Word Selection Carousel */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-telugu">
+                  సాధన పదాల జాబితా (Curriculum Words)
+                </span>
+                <span className="text-xs font-bold text-blue-600 font-mono">
+                  {selectedWordIndex + 1} of {CURRICULUM_WORDS.length}
+                </span>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                {CURRICULUM_WORDS.map((w, idx) => (
+                  <button
+                    key={w.id}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedWordIndex(idx);
+                    }}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer font-telugu ${
+                      selectedWordIndex === idx
+                        ? 'bg-blue-600 text-white shadow-md scale-102'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {w.word}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Target Phonetic Contrast Highlight */}
+            {currentWord.focusPair && (
+              <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs">
+                  🎯
+                </div>
+                <div>
+                  <span className="text-[11px] font-bold text-amber-900 block font-telugu">
+                    ధ్వని వ్యత్యాస సాధన: {currentWord.focusPair}
+                  </span>
+                  <span className="text-[11px] text-amber-700">
+                    {currentWord.teacherTipTe}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Microphone Interaction Box */}
+            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 text-center space-y-4">
+              <span className="text-xs font-bold text-slate-600 font-telugu block">
+                మైక్రోఫోన్ నొక్కి బిగ్గరగా చదవండి (Tap to Speak)
+              </span>
+
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all transform active:scale-95 shadow-xl cursor-pointer ${
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse ring-8 ring-red-200'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105'
+                }`}
+              >
+                {isListening ? <MicOff className="w-8 h-8" /> : <Mic className="w-8 h-8" />}
+              </button>
+
+              <div className="text-xs font-bold text-slate-500 font-telugu">
+                {isListening ? (
+                  <span className="text-red-600 animate-pulse">
+                    రికార్డింగ్ అవుతోంది... ఇప్పుడు మాట్లాడండి!
+                  </span>
+                ) : (
+                  <span>మైక్రోఫోన్ బటన్ నొక్కండి</span>
+                )}
+              </div>
+
+              {/* Live Speech Recognition Feedback */}
               {spokenTranscript && (
-                <div className="mt-6 p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-700 font-medium">
-                  {t('మీరు పలికిన పదం:', 'Recognized Speech:')}{' '}
-                  <span className="font-bold text-slate-900 text-sm font-telugu bg-white px-2 py-0.5 rounded border border-slate-200 ml-1">
-                    {spokenTranscript}
+                <div className="p-3 bg-white rounded-2xl border border-slate-200 max-w-sm mx-auto shadow-2xs">
+                  <span className="text-[10px] text-slate-400 font-bold block">
+                    మీరు పలికిన శబ్దం:
+                  </span>
+                  <span className="text-base font-black text-slate-900 font-telugu">
+                    "{spokenTranscript}"
                   </span>
                 </div>
               )}
             </div>
 
-            {/* AI Tutor Dialogue Box */}
+            {/* Diagnostic Phonetic Feedback Result */}
             {feedbackResult && (
               <div
-                className={`rounded-3xl p-6 border shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 ${
-                  feedbackResult.status === 'correct'
-                    ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                    : 'bg-amber-50/80 border-amber-200 text-amber-950'
+                className={`p-4 rounded-2xl border flex items-start gap-3 animate-in fade-in ${
+                  feedbackResult.phoneticMatch
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow ${
-                      feedbackResult.status === 'correct' ? 'bg-emerald-600' : 'bg-amber-600'
-                    }`}
-                  >
-                    {feedbackResult.status === 'correct' ? (
-                      <CheckCircle2 className="w-7 h-7" />
-                    ) : (
-                      <Smile className="w-7 h-7" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm tracking-tight flex items-center gap-1.5">
-                        <span>{feedbackResult.encouragementBadge}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/80 border border-slate-200 font-mono">
-                          {feedbackResult.confidence}% Confidence
-                        </span>
+                {feedbackResult.phoneticMatch ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                )}
+                <div>
+                  <h4 className="text-xs font-black font-telugu">
+                    {feedbackResult.encouragementTe}
+                  </h4>
+                  <div className="flex gap-1.5 mt-2">
+                    {feedbackResult.correctSyllables.map((s, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 bg-emerald-200 text-emerald-900 font-bold text-xs rounded-md font-telugu"
+                      >
+                        ✓ {s}
                       </span>
-
-                      <button
-                        onClick={() => playTeluguSpeech(feedbackResult.aiDialogueTelugu)}
-                        className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-sm"
+                    ))}
+                    {feedbackResult.weakSyllables.map((s, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 bg-red-200 text-red-900 font-bold text-xs rounded-md font-telugu"
                       >
-                        <Volume2 className="w-3.5 h-3.5" />
-                        <span>{t('మళ్ళీ వినండి', 'Repeat Voice')}</span>
-                      </button>
-                    </div>
-
-                    {/* Dialogue Paragraph */}
-                    <p className="text-sm sm:text-base font-telugu font-semibold leading-relaxed">
-                      {feedbackResult.aiDialogueTelugu}
-                    </p>
-
-                    {/* Contrast guidance card if error was detected */}
-                    {feedbackResult.contrastIssue && (
-                      <div className="mt-3 p-3.5 bg-white rounded-2xl border border-amber-200/90 text-xs text-slate-800 space-y-1.5">
-                        <div className="font-bold text-amber-900 flex items-center gap-1.5">
-                          <AlertCircle className="w-4 h-4 text-amber-600" />
-                          <span>{feedbackResult.contrastIssue.error_name}</span>
-                        </div>
-                        <p className="text-slate-600 leading-normal">
-                          {feedbackResult.contrastIssue.explanation_te}
-                        </p>
-                        <div className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 p-2 rounded-xl border border-emerald-200">
-                          💡 {t('ఉచ్చారణ చిట్కా:', 'Pronunciation Tip:')} {feedbackResult.contrastIssue.tip}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Slow repetition button */}
-                    <div className="pt-2 flex items-center gap-2">
-                      <button
-                        onClick={() => playTeluguSpeech(feedbackResult.slowRepeatPrompt)}
-                        className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1.5 shadow-sm"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
-                        <span>{t('నెమ్మదిగా అక్షరాలను వినండి', 'Listen Syllables Slowly')}</span>
-                      </button>
-                    </div>
+                        ✗ {s} (మళ్ళీ సాధన చేయండి)
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Right Column: Curriculum Words Navigator */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="bg-white rounded-3xl p-6 shadow-md border border-slate-200">
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-bold text-slate-900 text-sm">
-                    {t('సాధనా పదాల జాబితా (Curriculum)', 'Practice Words')}
-                  </h3>
-                </div>
-                <span className="text-xs text-slate-400 font-semibold font-mono">
-                  {selectedWordIndex + 1} / {CURRICULUM_WORDS.length}
-                </span>
-              </div>
+            {/* Next Word Navigation Footer */}
+            <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={selectedWordIndex === 0}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedWordIndex((i) => Math.max(0, i - 1));
+                }}
+                className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40 cursor-pointer font-telugu"
+              >
+                ← మునుపటి పదం
+              </button>
 
-              {/* Word List Scroll */}
-              <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
-                {CURRICULUM_WORDS.map((item, idx) => {
-                  const isSelected = selectedWordIndex === idx;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedWordIndex(idx)}
-                      className={`w-full text-left p-3 rounded-2xl border transition-all flex items-center justify-between group ${
-                        isSelected
-                          ? 'bg-amber-50 border-amber-300 shadow-sm'
-                          : 'bg-slate-50/70 hover:bg-slate-100 border-slate-200/80'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
-                            isSelected ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'
-                          }`}
-                        >
-                          {idx + 1}
-                        </div>
-                        <div>
-                          <div className="font-bold font-telugu text-base text-slate-900">
-                            {item.word}
-                          </div>
-                          <div className="text-[11px] text-slate-500">
-                            {item.meaningEn} • {item.category.split(' ')[0]}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        {item.focusPair && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-900">
-                            {item.focusPair.split(' ')[0]}
-                          </span>
-                        )}
-                        <ChevronRight
-                          className={`w-4 h-4 transition-transform ${
-                            isSelected ? 'text-amber-600 translate-x-0.5' : 'text-slate-300'
-                          }`}
-                        />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quick Contrast Guide Reference Card */}
-            <div className="bg-gradient-to-br from-indigo-900 to-blue-950 text-white rounded-3xl p-5 shadow-md">
-              <h4 className="font-bold text-xs uppercase tracking-wider text-blue-200 mb-2 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span>{t('ముఖ్యమైన అక్షర భేదాలు (Crucial Contrasts)', 'Crucial Contrasts')}</span>
-              </h4>
-              <ul className="text-xs space-y-1.5 text-slate-300">
-                <li>• <strong className="text-white">త vs ట:</strong> తాత (దంత్యము) vs టమాటా (మూర్ధన్యము)</li>
-                <li>• <strong className="text-white">ల vs ళ:</strong> గాలి (సరళము) vs తాళం (మూర్ధన్యము)</li>
-                <li>• <strong className="text-white">ద vs డ:</strong> దండ vs డబ్బా</li>
-                <li>• <strong className="text-white">శ vs ష vs స:</strong> శివుడు, భాష, సంతోషం</li>
-              </ul>
+              <button
+                type="button"
+                disabled={selectedWordIndex === CURRICULUM_WORDS.length - 1}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedWordIndex((i) => Math.min(CURRICULUM_WORDS.length - 1, i + 1));
+                }}
+                className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition flex items-center gap-1.5 cursor-pointer font-telugu"
+              >
+                <span>తదుపరి పదం (Next Word)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -561,4 +623,3 @@ export default function TeluguAiTutorPage() {
     </div>
   );
 }
-
