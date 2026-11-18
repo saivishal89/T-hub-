@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { TutorInteractionResult, VoiceGender } from '@/types';
 import { resolveApiUrl } from '@/lib/apiConfig';
 import confetti from 'canvas-confetti';
+import ChinniAvatar from '@/components/tutor/ChinniAvatar';
 import {
   Mic,
   MicOff,
@@ -263,7 +264,7 @@ export default function TeluguAiTutorPage() {
         <div className="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white rounded-3xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-3xl shadow-md">
-              🤖
+              🐘
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -312,6 +313,27 @@ export default function TeluguAiTutorPage() {
             </div>
           </div>
         </div>
+
+        {/* Chinni 3D Telugu Tutor */}
+        <section className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(240px,0.8fr)] gap-5 items-center rounded-3xl border border-sky-100 bg-white p-4 sm:p-5 shadow-sm">
+          <ChinniAvatar
+            isListening={isListening}
+            isThinking={isProcessing}
+            isSpeaking={isPlayingAudio}
+            isCelebrating={feedbackResult?.status === 'correct'}
+          />
+          <div className="px-2 py-3 text-center md:text-left">
+            <p className="text-xs font-bold uppercase tracking-widest text-sky-700">Your friendly Telugu learning buddy</p>
+            <h2 className="mt-2 text-2xl font-extrabold text-slate-900">Meet Chinni! 🐘</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              {isListening ? 'చిన్ని మీ మాట వింటోంది…' : isProcessing ? 'చిన్ని ఆలోచిస్తోంది…' : isPlayingAudio ? 'చిన్ని మీతో మాట్లాడుతోంది…' : feedbackResult?.status === 'correct' ? 'అద్భుతం! చిన్ని చాలా సంతోషంగా ఉంది!' : 'చిన్ని మీకు తెలుగు చదవడం నేర్పించడానికి సిద్ధంగా ఉంది. పదాన్ని ఎంచుకుని కలిసి చదువుదాం!'}
+            </p>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              {isListening ? 'Listening' : isProcessing ? 'Thinking' : isPlayingAudio ? 'Speaking' : 'Ready to learn'}
+            </div>
+          </div>
+        </section>
 
         {/* Main Interactive Stage */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
