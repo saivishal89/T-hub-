@@ -13,9 +13,9 @@ type ChinniAvatarProps = {
 };
 
 function ElephantModel({ isListening, isThinking, isSpeaking, isCelebrating }: ChinniAvatarProps) {
-  const root = useRef<THREE.Group>(null);
+  const root = useRef<THREE.Group | null>(null);
   const trunk = useRef<THREE.Group>(null);
-  const mouth = useRef<THREE.Mesh>(null);
+  const mouth = useRef<THREE.Mesh | null>(null);
   const leftEar = useRef<THREE.Mesh>(null);
   const rightEar = useRef<THREE.Mesh>(null);
 
